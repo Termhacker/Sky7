@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>SKY7 — Above the City</title>
+<meta name="description" content="SKY7 — a premium restaurant menu experience." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   SKY7 — style
+   ============================================================ */
+:root{
+  --bg:#1a1712;
+  --bg-soft:#221e17;
+  --ink:#ece5d8;
+  --ink-dim:#b7ad9c;
+  --muted:#8a8071;
+  --sage:#b7c79a;
+  --sage-deep:#93a874;
+  --gold:#d8c9a3;
+  --line:rgba(236,229,216,.14);
+  --panel:rgba(28,25,19,.72);
+  --serif:"Fraunces",Georgia,serif;
+  --sans:"Inter",-apple-system,"Segoe UI",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior:none;
+}
+/* atmospheric backdrop behind the canvas */
+.atmosphere{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(120% 90% at 50% -10%, rgba(216,201,163,.10), transparent 55%),
+    radial-gradient(90% 70% at 85% 110%, rgba(147,168,116,.08), transparent 60%),
+    radial-gradient(70% 60% at 8% 100%, rgba(184,169,140,.07), transparent 55%),
+    linear-gradient(180deg,#201c15 0%, #1a1712 45%, #15120e 100%);
+}
+canvas#scene{position:fixed;inset:0;z-index:1;display:block;touch-action:none}
+.grain{
+  position:fixed;inset:-50%;z-index:3;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grain 9s steps(6) infinite;
+}
+@keyframes grain{
+  0%{transform:translate(0,0)}20%{transform:translate(-4%,3%)}40%{transform:translate(3%,-5%)}
+  60%{transform:translate(-5%,-2%)}80%{transform:translate(4%,4%)}100%{transform:translate(0,0)}
+}
+.vignette{position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(120% 100% at 50% 50%, transparent 55%, rgba(10,8,6,.5) 100%)}
+
+/* ---------- header ---------- */
+header{
+  position:fixed;top:0;left:0;right:0;z-index:10;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:clamp(18px,3vw,32px) clamp(20px,4vw,48px);
+}
+.logo{
+  font-family:var(--serif);font-weight:600;letter-spacing:.28em;font-size:15px;
+  color:var(--ink);background:none;border:none;cursor:pointer;
+  display:flex;align-items:center;gap:12px;text-transform:uppercase;
+}
+.logo .dot{width:7px;height:7px;border-radius:50%;background:var(--sage);box-shadow:0 0 12px rgba(183,199,154,.7)}
+.back{
+  font-family:var(--sans);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--ink-dim);background:rgba(236,229,216,.04);border:1px solid var(--line);
+  padding:10px 18px;border-radius:999px;cursor:pointer;backdrop-filter:blur(6px);
+  transition:color .3s,border-color .3s,opacity .5s,transform .5s;
+  opacity:0;transform:translateY(-6px);pointer-events:none;
+}
+.back.show{opacity:1;transform:none;pointer-events:auto}
+.back:hover{color:var(--sage);border-color:rgba(183,199,154,.5)}
+button:focus-visible{outline:2px solid var(--sage);outline-offset:3px}
+
+/* ---------- hero ---------- */
+.hero{
+  position:fixed;inset:0;z-index:8;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;pointer-events:none;
+  transition:opacity .9s ease,visibility .9s;
+}
+.hero.gone{opacity:0;visibility:hidden}
+.hero .eyebrow{
+  font-size:11px;letter-spacing:.5em;text-transform:uppercase;color:var(--sage);
+  margin-bottom:26px;opacity:0;animation:rise 1.1s .2s cubic-bezier(.2,.7,.2,1) forwards;
+}
+.hero h1{
+  font-family:var(--serif);font-weight:300;
+  font-size:clamp(72px,17vw,220px);line-height:.9;letter-spacing:.06em;
+  background:linear-gradient(180deg,#f2ecdf 20%,#c9bda3 70%,#8f8674 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  opacity:0;animation:rise 1.2s .35s cubic-bezier(.2,.7,.2,1) forwards;
+}
+.hero .tag{
+  font-family:var(--serif);font-style:italic;font-weight:300;
+  font-size:clamp(15px,2.2vw,22px);color:var(--ink-dim);margin-top:22px;
+  opacity:0;animation:rise 1.1s .55s cubic-bezier(.2,.7,.2,1) forwards;
+}
+.hero .explore{
+  pointer-events:auto;margin-top:48px;cursor:pointer;
+  font-family:var(--sans);font-size:11px;letter-spacing:.4em;text-transform:uppercase;
+  color:var(--ink);background:none;border:1px solid var(--line);border-radius:999px;
+  padding:16px 42px 16px 46px;position:relative;overflow:hidden;
+  opacity:0;animation:rise 1.1s .75s cubic-bezier(.2,.7,.2,1) forwards;
+  transition:border-color .4s,color .4s;
+}
+.hero .explore::before{
+  content:"";position:absolute;inset:0;background:rgba(183,199,154,.12);
+  transform:scaleX(0);transform-origin:left;transition:transform .5s cubic-bezier(.2,.7,.2,1);
+}
+.hero .explore:hover::before{transform:scaleX(1)}
+.hero .explore:hover{border-color:rgba(183,199,154,.55);color:#fff}
+.hero .hint{
+  position:absolute;bottom:34px;font-size:10px;letter-spacing:.4em;text-transform:uppercase;
+  color:var(--muted);opacity:0;animation:rise 1.2s 1.1s forwards;
+}
+@keyframes rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+
+/* ---------- category pills ---------- */
+.catnav{
+  position:fixed;left:50%;bottom:clamp(16px,3.5vh,34px);transform:translateX(-50%);
+  z-index:10;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
+  padding:0 16px;max-width:100vw;
+  transition:opacity .7s,transform .7s;
+}
+.catnav.hidden{opacity:0;transform:translate(-50%,14px);pointer-events:none}
+.pill{
+  font-family:var(--sans);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink-dim);background:rgba(26,23,18,.55);border:1px solid var(--line);
+  padding:9px 15px;border-radius:999px;cursor:pointer;backdrop-filter:blur(8px);
+  transition:color .3s,border-color .3s,background .3s;white-space:nowrap;
+}
+.pill:hover{color:var(--ink);border-color:rgba(236,229,216,.4)}
+.pill.active{color:var(--sage);border-color:rgba(183,199,154,.6);background:rgba(183,199,154,.08)}
+.pill .num{color:var(--muted);margin-right:7px;font-size:9px}
+.pill.active .num{color:var(--sage-deep)}
+
+/* ---------- food info panel ---------- */
+.info{
+  position:fixed;z-index:9;right:clamp(20px,6vw,90px);top:50%;transform:translateY(-50%);
+  width:min(330px,78vw);pointer-events:none;
+  transition:opacity .6s;
+}
+.info.hidden{opacity:0}
+.info .eyebrow{
+  font-size:10px;letter-spacing:.42em;text-transform:uppercase;color:var(--sage);margin-bottom:14px;
+  display:flex;align-items:center;gap:10px;
+}
+.info .eyebrow::before{content:"";width:26px;height:1px;background:var(--sage);opacity:.6}
+.info h2{
+  font-family:var(--serif);font-weight:400;font-size:clamp(30px,3.6vw,46px);
+  line-height:1.02;color:var(--ink);margin-bottom:14px;
+}
+.info p{font-size:13.5px;font-weight:300;line-height:1.65;color:var(--ink-dim);margin-bottom:22px}
+.info .row{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.info .price{font-family:var(--serif);font-size:24px;color:var(--gold)}
+.badge{
+  font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--sage);
+  border:1px solid rgba(183,199,154,.45);border-radius:999px;padding:6px 12px;
+}
+.avail{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.avail .d{width:6px;height:6px;border-radius:50%;background:var(--sage)}
+.avail.out .d{background:#c98a7d}
+.info .progress{height:1px;background:var(--line);position:relative;margin-top:26px}
+.info .progress i{position:absolute;left:0;top:0;height:1px;background:var(--sage);display:block;transition:width .5s cubic-bezier(.2,.7,.2,1)}
+.info .count{margin-top:12px;font-size:10px;letter-spacing:.34em;color:var(--muted)}
+.info .count b{color:var(--ink);font-weight:500}
+
+/* ---------- vertical arrows ---------- */
+.arrows{
+  position:fixed;right:clamp(18px,2.5vw,34px);top:50%;transform:translateY(-50%);
+  z-index:10;display:flex;flex-direction:column;gap:10px;
+  transition:opacity .6s;
+}
+.arrows.hidden{opacity:0;pointer-events:none}
+.arrow{
+  width:44px;height:44px;border-radius:50%;cursor:pointer;
+  border:1px solid var(--line);background:rgba(26,23,18,.5);backdrop-filter:blur(8px);
+  color:var(--ink-dim);font-size:15px;display:grid;place-items:center;
+  transition:color .3s,border-color .3s,transform .2s;
+}
+.arrow:hover{color:var(--sage);border-color:rgba(183,199,154,.55)}
+.arrow:active{transform:scale(.92)}
+
+/* ---------- scroll hint (menu mode) ---------- */
+.scrolly{
+  position:fixed;left:clamp(20px,4vw,48px);top:50%;transform:translateY(-50%);
+  z-index:9;display:flex;flex-direction:column;align-items:center;gap:14px;
+  transition:opacity .6s;
+}
+.scrolly.hidden{opacity:0;pointer-events:none}
+.scrolly span{writing-mode:vertical-rl;font-size:9px;letter-spacing:.5em;text-transform:uppercase;color:var(--muted)}
+.scrolly i{width:1px;height:52px;background:linear-gradient(180deg,var(--sage),transparent);display:block;animation:drip 2.2s ease-in-out infinite}
+@keyframes drip{0%{transform:scaleY(0);transform-origin:top}45%{transform:scaleY(1);transform-origin:top}55%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* ---------- footer ---------- */
+footer{
+  position:fixed;left:0;right:0;bottom:0;z-index:5;pointer-events:none;
+  display:flex;justify-content:space-between;padding:14px clamp(20px,4vw,48px);
+  font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:rgba(138,128,113,.7);
+}
+
+@media (max-width:760px){
+  .info{
+    right:auto;left:0;top:auto;bottom:118px;transform:none;
+    width:100%;padding:0 24px;
+  }
+  .info h2{font-size:30px}
+  .info p{font-size:12.5px;margin-bottom:14px}
+  .arrows{right:14px}
+  .scrolly{display:none}
+  .catnav{bottom:14px;gap:6px}
+  .pill{padding:8px 11px;font-size:9px}
+  .hero .hint{bottom:96px}
+}
+@media (prefers-reduced-motion: reduce){
+  .grain,.scrolly i{animation:none}
+  .hero .eyebrow,.hero h1,.hero .tag,.hero .explore,.hero .hint{animation-duration:.01s;animation-delay:0s}
+}
+</style>
+</head>
+<body>
+
+<div class="atmosphere" aria-hidden="true"></div>
+<canvas id="scene" aria-label="SKY7 interactive 3D menu"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<header>
+  <button class="logo" id="logoBtn" aria-label="SKY7 home"><span class="dot"></span>SKY7</button>
+  <button class="back" id="backBtn" aria-label="Return to categories">&#8592;&nbsp; Categories</button>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero" id="hero" aria-label="Introduction">
+    <div class="eyebrow">A restaurant, seven storeys up</div>
+    <h1>SKY7</h1>
+    <p class="tag">Dinner above the noise of the city.</p>
+    <button class="explore" id="exploreBtn">Explore Menu</button>
+    <div class="hint">Six windows &middot; One table</div>
+  </section>
+
+  <!-- FOOD INFO -->
+  <aside class="info hidden" id="info" aria-live="polite">
+    <div class="eyebrow" id="infoCat">Category</div>
+    <h2 id="infoName">Dish</h2>
+    <p id="infoDesc">Description</p>
+    <div class="row">
+      <span class="price" id="infoPrice">&#8358;0</span>
+      <span class="badge" id="infoBadge" style="display:none">Chef&rsquo;s Pick</span>
+    </div>
+    <div class="avail" id="infoAvail"><span class="d"></span><span id="infoAvailTxt">Available</span></div>
+    <div class="progress"><i id="infoBar" style="width:20%"></i></div>
+    <div class="count"><b id="infoIdx">01</b> &mdash; <span id="infoTotal">05</span></div>
+  </aside>
+
+  <!-- CATEGORY NAV -->
+  <nav class="catnav hidden" id="catnav" aria-label="Menu categories"></nav>
+
+  <!-- ARROWS -->
+  <div class="arrows hidden" id="arrows" aria-hidden="false">
+    <button class="arrow" id="upBtn" aria-label="Previous dish">&#8593;</button>
+    <button class="arrow" id="downBtn" aria-label="Next dish">&#8595;</button>
+  </div>
+
+  <!-- SCROLL HINT -->
+  <div class="scrolly hidden" id="scrolly" aria-hidden="true">
+    <span>Scroll</span><i></i>
+  </div>
+</main>
+
+<footer>
+  <span>Sky7 &middot; Above the city</span>
+  <span>Menu &middot; Vol. 01</span>
+</footer>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+/* ============================================================
+   1. DATA  —  ← EDIT EVERYTHING HERE. Add images later by
+   setting  image: "images/your-dish.jpg"  on any item.
+   ============================================================ */
+const CATEGORIES = [
+  { id:'mains', name:'Main Dishes', items:[
+    { name:'Jollof Rice', desc:'Smoky party-style rice, slow-cooked in a rich tomato and pepper base, finished over open flame.', price:'₦4,500', image:'', available:true, badge:'Chef’s Pick' },
+    { name:'Egusi & Pounded Yam', desc:'Ground melon seed stew with spinach and palm oil, served with silky hand-pounded yam.', price:'₦6,200', image:'', available:true },
+    { name:'Pepper Soup', desc:'Fragrant native-spice broth with fresh catfish, scent leaf and a quiet hum of heat.', price:'₦5,800', image:'', available:true },
+    { name:'Ofada Rice & Ayamase', desc:'Local ofada rice with green pepper designer stew and assorted slow-cooked meats.', price:'₦6,500', image:'', available:true },
+    { name:'Fisherman Okra', desc:'Seafood-laden okra soup with prawns, periwinkle and crab, drawn straight from the coast.', price:'₦7,200', image:'', available:false },
+  ]},
+  { id:'starters', name:'Starters', items:[
+    { name:'Suya Skewers', desc:'Flame-grilled beef in house-ground yaji spice, with fresh onion and tomato.', price:'₦3,800', image:'', available:true, badge:'Chef’s Pick' },
+    { name:'Prawn Toast', desc:'Golden sesame-crusted prawn toast with a chilli-lime dipping sauce.', price:'₦3,200', image:'', available:true },
+    { name:'Akara & Pepper Dip', desc:'Whipped bean fritters, fried to order, with a roasted red pepper dip.', price:'₦2,500', image:'', available:true },
+    { name:'Plantain Cups', desc:'Crisp cups of ripe plantain filled with peppered chicken and avocado crema.', price:'₦2,900', image:'', available:true },
+  ]},
+  { id:'grills', name:'Grills', items:[
+    { name:'Charcoal Chicken', desc:'Half bird marinated overnight, charred over hardwood coals, served with fried yam.', price:'₦7,500', image:'', available:true, badge:'Chef’s Pick' },
+    { name:'Beef Asun', desc:'Smoky char-grilled beef tossed in scotch-bonnet butter and bell peppers.', price:'₦6,800', image:'', available:true },
+    { name:'Grilled Croaker', desc:'Whole croaker scored and grilled, brushed with garlic-palm oil and lime.', price:'₦9,200', image:'', available:true },
+    { name:'Lamb Chops', desc:'Tommy-rack lamb chops, charred crust, rosemary jus, smoked aubergine.', price:'₦11,000', image:'', available:false },
+  ]},
+  { id:'sides', name:'Sides', items:[
+    { name:'Fried Plantain', desc:'Caramel-edged dodo, salted while hot. Dangerously easy to finish.', price:'₦2,200', image:'', available:true },
+    { name:'Coconut Rice', desc:'Fragrant rice steamed in coconut milk with sweet peppers and thyme.', price:'₦3,000', image:'', available:true },
+    { name:'Moin Moin', desc:'Steamed bean pudding with egg and smoked prawn, wrapped in leaf.', price:'₦2,000', image:'', available:true },
+    { name:'Salad of the Day', desc:'Whatever the market gave us this morning, dressed simply and well.', price:'₦2,800', image:'', available:true },
+  ]},
+  { id:'drinks', name:'Drinks', items:[
+    { name:'Chapman', desc:'The classic — grenadine, citrus, bitters and a whisper of almond, over crushed ice.', price:'₦2,500', image:'', available:true, badge:'Chef’s Pick' },
+    { name:'Zobo Spritz', desc:'Hibiscus cold-brew shaken with ginger and lime, topped with soda.', price:'₦2,000', image:'', available:true },
+    { name:'Palm Wine Cooler', desc:'Fresh palm wine over ice with a squeeze of lime. Drink it young.', price:'₦3,000', image:'', available:true },
+    { name:'Ginger Beer', desc:'House-fermented, fiery and cold. Non-alcoholic, fully awake.', price:'₦1,800', image:'', available:false },
+  ]},
+  { id:'desserts', name:'Desserts', items:[
+    { name:'Agege Toast', desc:'Crisped agege bread, brown-sugar butter, vanilla chantilly.', price:'₦2,800', image:'', available:true },
+    { name:'Coconut Candy Parfait', desc:'Layers of coconut candy crumble, coconut cream and toasted flakes.', price:'₦3,200', image:'', available:true },
+    { name:'Plantain Tarte', desc:'Caramelised plantain on crisp pastry with palm-sugar ice cream.', price:'₦3,600', image:'', available:true, badge:'Chef’s Pick' },
+  ]},
+];
+
+/* ============================================================
+   2. CONFIG / STATE
+   ============================================================ */
+const CFG = {
+  radius: 5.4,          // cylinder radius of the food carousel
+  spacing: 0.60,        // angular spacing between items (radians)
+  fov: 45,
+  cardW: 3.7, cardH: 4.7, imgW: 3.3, imgH: 4.1,
+  bendR: 16,            // gentle convex curve of each image plane
+  maxDpr: 2,
+};
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const state = {
+  mode: 'hero',            // hero | wall | menu | transition
+  category: null,          // active category object
+  rot: 0,                  // current carousel rotation (in item units)
+  target: 0,               // target rotation
+  activeIdx: -1,
+  hoverPanel: null,
+  menuScale: 1,
+};
+
+/* ============================================================
+   3. TINY TWEEN ENGINE
+   ============================================================ */
+const tweens = new Set();
+const easeInOutCubic = k => k < .5 ? 4*k*k*k : 1 - Math.pow(-2*k + 2, 3) / 2;
+const easeOutCubic = k => 1 - Math.pow(1-k, 3);
+function tween({ dur = 1, ease = easeInOutCubic, onUpdate, onComplete }){
+  tweens.add({ t: 0, dur: REDUCED ? Math.min(dur, 0.01) : dur, ease, onUpdate, onComplete });
+}
+function stepTweens(dt){
+  for (const tw of tweens){
+    tw.t += dt;
+    const k = Math.min(tw.t / tw.dur, 1);
+    tw.onUpdate && tw.onUpdate(tw.ease(k));
+    if (k >= 1){ tweens.delete(tw); tw.onComplete && tw.onComplete(); }
+  }
+}
+
+/* ============================================================
+   4. TEXTURE FACTORIES  (canvas-generated, no external images)
+   ============================================================ */
+function makePlaceholderTexture(){
+  const c = document.createElement('canvas'); c.width = 512; c.height = 640;
+  const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 120, 640);
+  g.addColorStop(0, '#b3a78f'); g.addColorStop(.55, '#978b76'); g.addColorStop(1, '#7c7260');
+  x.fillStyle = g; x.fillRect(0, 0, 512, 640);
+  // soft radial light from top
+  const r = x.createRadialGradient(256, 140, 30, 256, 140, 480);
+  r.addColorStop(0, 'rgba(240,232,214,.28)'); r.addColorStop(1, 'rgba(240,232,214,0)');
+  x.fillStyle = r; x.fillRect(0, 0, 512, 640);
+  // fine noise
+  for (let i = 0; i < 900; i++){
+    x.fillStyle = `rgba(${Math.random() > .5 ? '255,250,240' : '20,16,10'},${Math.random() * .05})`;
+    x.fillRect(Math.random() * 512, Math.random() * 640, 1.4, 1.4);
+  }
+  // hairline inner frame
+  x.strokeStyle = 'rgba(240,232,214,.22)'; x.lineWidth = 2;
+  x.strokeRect(18, 18, 476, 604);
+  // monogram
+  x.fillStyle = 'rgba(240,232,214,.13)';
+  x.font = '300 150px Fraunces, Georgia, serif'; x.textAlign = 'center';
+  x.fillText('S7', 256, 360);
+  // caption
+  try { x.letterSpacing = '5px'; } catch(e){}
+  x.fillStyle = 'rgba(240,232,214,.4)';
+  x.font = '500 17px Inter, sans-serif';
+  x.fillText('PLACEHOLDER — ADD IMAGE IN DATA', 256, 592);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return t;
+}
+function makeCategoryTitleTexture(name, idx){
+  const c = document.createElement('canvas'); c.width = 512; c.height = 200;
+  const x = c.getContext('2d');
+  x.clearRect(0, 0, 512, 200);
+  x.textAlign = 'left';
+  x.fillStyle = 'rgba(183,199,154,.95)';
+  x.font = '500 22px Inter, sans-serif';
+  try { x.letterSpacing = '6px'; } catch(e){}
+  x.fillText('0' + (idx + 1), 6, 34);
+  x.fillStyle = '#efe8da';
+  x.font = '400 56px Fraunces, Georgia, serif';
+  try { x.letterSpacing = '1px'; } catch(e){}
+  x.fillText(name, 4, 112);
+  x.fillStyle = 'rgba(183,199,154,.55)';
+  x.fillRect(6, 148, 64, 2);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return t;
+}
+function makeGlowTexture(){
+  const c = document.createElement('canvas'); c.width = 256; c.height = 256;
+  const x = c.getContext('2d');
+  const g = x.createRadialGradient(128, 128, 10, 128, 128, 128);
+  g.addColorStop(0, 'rgba(216,201,163,.5)'); g.addColorStop(.5, 'rgba(216,201,163,.12)'); g.addColorStop(1, 'rgba(216,201,163,0)');
+  x.fillStyle = g; x.fillRect(0, 0, 256, 256);
+  return new THREE.CanvasTexture(c);
+}
+
+/* ============================================================
+   5. THREE.JS SCENE
+   ============================================================ */
+const canvas = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, CFG.maxDpr));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x1a1712, 10, 34);
+
+const camera = new THREE.PerspectiveCamera(CFG.fov, 1, 0.1, 100);
+const camPos = new THREE.Vector3(0, 0.6, 15);   // tweenable camera anchor
+camera.position.copy(camPos);
+
+/* --- lighting --- */
+scene.add(new THREE.AmbientLight(0xd8c9a3, 0.55));
+const key = new THREE.DirectionalLight(0xffe8c4, 1.35); key.position.set(3, 6, 8); scene.add(key);
+const rim = new THREE.PointLight(0x93a874, 18, 30); rim.position.set(-6, 2, -5); scene.add(rim);
+const fill = new THREE.PointLight(0xd8c9a3, 8, 25); fill.position.set(5, -3, 4); scene.add(fill);
+
+/* --- backdrop glow --- */
+const glow = new THREE.Mesh(
+  new THREE.PlaneGeometry(46, 28),
+  new THREE.MeshBasicMaterial({ map: makeGlowTexture(), transparent: true, opacity: .5, depthWrite: false })
+);
+glow.position.set(0, 1, -13); scene.add(glow);
+
+/* --- dust --- */
+let dust = null;
+{
+  const n = REDUCED ? 0 : 140;
+  if (n){
+    const pos = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++){ pos[i*3] = (Math.random()-.5)*18; pos[i*3+1] = (Math.random()-.5)*12; pos[i*3+2] = (Math.random()-.5)*8; }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    dust = new THREE.Points(g, new THREE.PointsMaterial({ color: 0xd8c9a3, size: .035, transparent: true, opacity: .35, depthWrite: false }));
+    scene.add(dust);
+  }
+}
+
+/* --- shared assets --- */
+const placeholderTex = makePlaceholderTexture();
+const frameMat = new THREE.MeshStandardMaterial({ color: 0x7d7263, roughness: .5, metalness: .3 });
+const plateMat = new THREE.MeshStandardMaterial({ color: 0x26211a, roughness: .85, metalness: .05 });
+
+function bendGeometry(geo, radius){          // subtle convex curve (center toward viewer)
+  const p = geo.attributes.position;
+  for (let i = 0; i < p.count; i++){
+    const x = p.getX(i);
+    p.setZ(i, -(radius - Math.sqrt(radius*radius - x*x)));
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
+
+/* ============================================================
+   6. CATEGORY WALL  (six 3D panels, 2 × 3)
+   ============================================================ */
+const wallGroup = new THREE.Group(); scene.add(wallGroup);
+const panels = [];
+const PANEL_W = 2.7, PANEL_H = 3.5, COL_X = 2.95, ROW_Y = 2.05;
+
+CATEGORIES.forEach((cat, i) => {
+  const g = new THREE.Group();
+  const col = i % 2, row = Math.floor(i / 2);
+  g.position.set((col === 0 ? -1 : 1) * COL_X, (1 - row) * ROW_Y, 0);
+  g.userData = { baseX: g.position.x, baseY: g.position.y, cat, i, hover: 0 };
+
+  const frame = new THREE.Mesh(
+    new RoundedBoxGeometry(PANEL_W, PANEL_H, .16, 3, .05),
+    frameMat.clone()
+  );
+  frame.userData.panel = g; g.add(frame);
+
+  const plate = new THREE.Mesh(new THREE.PlaneGeometry(PANEL_W - .3, PANEL_H - .3), plateMat);
+  plate.position.z = .085; g.add(plate);
+
+  const img = new THREE.Mesh(
+    new THREE.PlaneGeometry(2.24, 2.1),
+    new THREE.MeshStandardMaterial({ map: placeholderTex, roughness: .9, metalness: 0 })
+  );
+  img.position.set(0, .42, .09); g.add(img);
+
+  const title = new THREE.Mesh(
+    new THREE.PlaneGeometry(2.2, .86),
+    new THREE.MeshBasicMaterial({ map: makeCategoryTitleTexture(cat.name, i), transparent: true })
+  );
+  title.position.set(0, -1.2, .095); g.add(title);
+
+  wallGroup.add(g); panels.push(g);
+});
+
+/* ============================================================
+   7. FOOD CAROUSELS  (one per category, curved vertical cylinder)
+   ============================================================ */
+const carousels = new Map();   // catId -> { group, cards:[{group, dim, idx}] }
+const raycaster = new THREE.Raycaster();
+const pointerNDC = new THREE.Vector2(0, 0);
+const texLoader = new THREE.TextureLoader();
+
+function applyItemImage(item, mesh){           // ← drop-in point for real photos
+  if (!item.image) return;
+  texLoader.load(item.image, tex => {
+    tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+    const imgA = tex.image.width / tex.image.height, planeA = CFG.imgW / CFG.imgH;
+    if (imgA > planeA){ tex.repeat.set(planeA / imgA, 1); tex.offset.set((1 - planeA / imgA) / 2, 0); }
+    else { tex.repeat.set(1, imgA / planeA); tex.offset.set(0, (1 - imgA / planeA) / 2); }
+    mesh.material.map = tex; mesh.material.needsUpdate = true;
+  });
+}
+
+CATEGORIES.forEach(cat => {
+  const group = new THREE.Group(); group.visible = false; scene.add(group);
+  const cards = [];
+  cat.items.forEach((item, idx) => {
+    const card = new THREE.Group();
+
+    const frame = new THREE.Mesh(
+      new RoundedBoxGeometry(CFG.cardW, CFG.cardH, .16, 3, .06),
+      frameMat.clone()
+    );
+    card.add(frame);
+
+    const imgGeo = bendGeometry(new THREE.PlaneGeometry(CFG.imgW, CFG.imgH, 20, 1), CFG.bendR);
+    const img = new THREE.Mesh(imgGeo, new THREE.MeshStandardMaterial({ map: placeholderTex, roughness: .85 }));
+    img.position.z = .085; card.add(img);
+    applyItemImage(item, img);
+
+    const dim = new THREE.Mesh(
+      new THREE.PlaneGeometry(CFG.cardW + .04, CFG.cardH + .04),
+      new THREE.MeshBasicMaterial({ color: 0x14110c, transparent: true, opacity: 0, depthWrite: false })
+    );
+    dim.position.z = .12; card.add(dim);
+
+    frame.userData.cardIndex = idx;
+    group.add(card);
+    cards.push({ group: card, dim, idx });
+  });
+  carousels.set(cat.id, { group, cards });
+});
+
+/* ============================================================
+   8. DOM REFS & UI
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const heroEl = $('hero'), infoEl = $('info'), catnavEl = $('catnav'),
+      arrowsEl = $('arrows'), scrollyEl = $('scrolly'), backBtn = $('backBtn');
+
+const fmt = n => String(n + 1).padStart(2, '0');
+
+// category pills
+CATEGORIES.forEach((cat, i) => {
+  const b = document.createElement('button');
+  b.className = 'pill'; b.dataset.cat = cat.id;
+  b.innerHTML = `<span class="num">0${i + 1}</span>${cat.name}`;
+  b.setAttribute('aria-label', 'Open ' + cat.name);
+  b.addEventListener('click', () => selectCategory(cat.id));
+  catnavEl.appendChild(b);
+});
+function markPill(id){
+  catnavEl.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p.dataset.cat === id));
+}
+
+function updateInfo(){
+  const cat = state.category; if (!cat) return;
+  const idx = Math.max(0, Math.min(cat.items.length - 1, Math.round(state.rot)));
+  if (idx === state.activeIdx) return;
+  state.activeIdx = idx;
+  const item = cat.items[idx];
+
+  $('infoCat').textContent = cat.name;
+  $('infoName').textContent = item.name;
+  $('infoDesc').textContent = item.desc;
+  $('infoPrice').textContent = item.price;
+  const badge = $('infoBadge');
+  badge.style.display = item.badge ? '' : 'none';
+  if (item.badge) badge.textContent = item.badge;
+  const avail = $('infoAvail');
+  avail.classList.toggle('out', !item.available);
+  $('infoAvailTxt').textContent = item.available ? 'Available today' : 'Sold out — back tomorrow';
+  $('infoIdx').textContent = fmt(idx);
+  $('infoTotal').textContent = fmt(cat.items.length - 1);
+  $('infoBar').style.width = ((idx + 1) / cat.items.length * 100) + '%';
+
+  if (!REDUCED){
+    infoEl.animate(
+      [{ opacity: .2, transform: getComputedStyle(infoEl).transform + ' translateY(8px)' }, { opacity: 1, transform: getComputedStyle(infoEl).transform }],
+      { duration: 420, easing: 'cubic-bezier(.2,.7,.2,1)' }
+    );
+  }
+}
+
+/* ============================================================
+   9. TRANSITIONS
+   ============================================================ */
+function goWall(){
+  if (state.mode === 'wall' || state.mode === 'transition') return;
+  state.mode = 'transition';
+  infoEl.classList.add('hidden'); arrowsEl.classList.add('hidden'); scrollyEl.classList.add('hidden');
+  backBtn.classList.remove('show');
+
+  const car = carousels.get(state.category?.id);
+  if (car){
+    tween({ dur: .9, ease: easeInOutCubic, onUpdate: k => { car.group.position.z = -6 * k; },
+      onComplete: () => { car.group.visible = false; car.group.position.z = 0; } });
+  }
+  wallGroup.visible = true;
+  tween({ dur: .9, onUpdate: k => { wallGroup.position.z = -8 * (1 - k); } });
+  const fromZ = camPos.z;
+  tween({ dur: 1.1, onUpdate: k => {
+    camPos.z = THREE.MathUtils.lerp(fromZ, wallZ(), k);
+    camPos.y = THREE.MathUtils.lerp(camPos.y, .3, k);
+  }, onComplete: () => { state.mode = 'wall'; } });
+  markPill(null);
+}
+
+function selectCategory(id){
+  if (state.mode === 'transition') return;
+  const cat = CATEGORIES.find(c => c.id === id); if (!cat) return;
+  const first = state.mode !== 'menu';
+  state.mode = 'transition';
+  state.category = cat;
+  state.rot = 0; state.target = 0; state.activeIdx = -1;
+
+  heroEl.classList.add('gone');
+  catnavEl.classList.remove('hidden');
+
+  // wall recedes into the fog
+  tween({ dur: .95, ease: easeInOutCubic, onUpdate: k => { wallGroup.position.z = -8 * k; },
+    onComplete: () => { wallGroup.visible = false; wallGroup.position.z = 0; } });
+
+  // carousel enters
+  const car = carousels.get(id);
+  car.group.visible = true; car.group.position.z = -6;
+  tween({ dur: 1.1, ease: easeOutCubic, onUpdate: k => { car.group.position.z = -6 * (1 - k); } });
+
+  // camera glides in
+  const fromZ = first ? camPos.z : camPos.z;
+  tween({ dur: 1.15, onUpdate: k => {
+    camPos.z = THREE.MathUtils.lerp(fromZ, menuZ(), k);
+    camPos.y = THREE.MathUtils.lerp(camPos.y, 0, k);
+  }, onComplete: () => { state.mode = 'menu'; } });
+
+  backBtn.classList.add('show');
+  arrowsEl.classList.remove('hidden');
+  scrollyEl.classList.remove('hidden');
+  markPill(id);
+  setTimeout(() => { infoEl.classList.remove('hidden'); updateInfo(); }, first ? 650 : 250);
+}
+
+$('exploreBtn').addEventListener('click', () => {
+  heroEl.classList.add('gone');
+  catnavEl.classList.remove('hidden');
+  tween({ dur: 1.3, onUpdate: k => {
+    camPos.z = THREE.MathUtils.lerp(15, wallZ(), k);
+    camPos.y = THREE.MathUtils.lerp(.6, .3, k);
+  }, onComplete: () => { state.mode = 'wall'; } });
+});
+$('logoBtn').addEventListener('click', () => {
+  if (state.mode === 'menu') goWall();
+  else if (state.mode === 'wall'){ /* already home */ }
+});
+backBtn.addEventListener('click', goWall);
+$('upBtn').addEventListener('click', () => step(-1));
+$('downBtn').addEventListener('click', () => step(1));
+
+/* ============================================================
+   10. INPUT — wheel / pointer / touch / keyboard
+   ============================================================ */
+let lastInput = 0;
+function itemCount(){ return state.category ? state.category.items.length : 0; }
+function clampTarget(v){
+  const n = itemCount();
+  return THREE.MathUtils.clamp(v, -0.35, n - 1 + 0.35);
+}
+function setTarget(v){ state.target = clampTarget(v); lastInput = performance.now(); }
+function step(d){
+  if (state.mode !== 'menu') return;
+  setTarget(Math.round(state.target) + d);
+  lastInput = performance.now() - 100000;   // snap immediately
+}
+
+window.addEventListener('wheel', e => {
+  if (state.mode !== 'menu') return;
+  e.preventDefault();
+  const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+  setTarget(state.target + dy * 0.0038);
+}, { passive: false });
+
+let dragging = false, dragMoved = 0, lastY = 0;
+canvas.addEventListener('pointerdown', e => { dragging = true; dragMoved = 0; lastY = e.clientY; canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointermove', e => {
+  pointerNDC.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  if (dragging){
+    const dy = e.clientY - lastY; lastY = e.clientY;
+    dragMoved += Math.abs(dy);
+    if (state.mode === 'menu') setTarget(state.target - dy * 0.006);
+  }
+});
+canvas.addEventListener('pointerup', e => {
+  dragging = false;
+  if (dragMoved > 8) return;                    // it was a drag, not a tap
+  if (state.mode === 'wall'){
+    raycaster.setFromCamera(pointerNDC, camera);
+    const hits = raycaster.intersectObjects(wallGroup.children, true);
+    if (hits.length){
+      let o = hits[0].object;
+      while (o && !o.userData.cat) o = o.parent;
+      if (o) selectCategory(o.userData.cat.id);
+    }
+  } else if (state.mode === 'menu'){
+    raycaster.setFromCamera(pointerNDC, camera);
+    const car = carousels.get(state.category.id);
+    const hits = raycaster.intersectObjects(car.group.children, true);
+    if (hits.length){
+      let o = hits[0].object, idx = null;
+      while (o){ if (o.userData.cardIndex !== undefined){ idx = o.userData.cardIndex; break; } o = o.parent; }
+      if (idx !== null && idx !== Math.round(state.rot)) setTarget(idx);
+    }
+  }
+});
+canvas.addEventListener('pointercancel', () => { dragging = false; });
+
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && state.mode === 'menu'){ goWall(); return; }
+  if (state.mode !== 'menu') return;
+  if (e.key === 'ArrowDown' || e.key === 'PageDown'){ e.preventDefault(); step(1); }
+  if (e.key === 'ArrowUp' || e.key === 'PageUp'){ e.preventDefault(); step(-1); }
+  if (e.key === 'Home'){ setTarget(0); lastInput = 0; }
+  if (e.key === 'End'){ setTarget(itemCount() - 1); lastInput = 0; }
+  const num = parseInt(e.key);
+  if (num >= 1 && num <= 6) selectCategory(CATEGORIES[num - 1].id);
+});
+
+/* ============================================================
+   11. RESPONSIVE CAMERA
+   ============================================================ */
+let zWall = 10.5, zMenu = 6.0;
+const tanHalf = Math.tan(THREE.MathUtils.degToRad(CFG.fov / 2));
+function wallZ(){ return zWall; }
+function menuZ(){ return zMenu; }
+function onResize(){
+  const w = innerWidth, h = innerHeight, aspect = w / h;
+  renderer.setSize(w, h);
+  camera.aspect = aspect; camera.updateProjectionMatrix();
+  zWall = Math.max(10.5, 4.6 / (tanHalf * aspect));
+  state.menuScale = aspect < 0.9 ? Math.max(0.55, aspect / 0.9) : 1;
+  zMenu = Math.max(5.6, (2.05 * state.menuScale + 0.35) / (tanHalf * aspect));
+  if (state.mode === 'wall') camPos.z = zWall;
+  if (state.mode === 'menu') camPos.z = zMenu;
+}
+window.addEventListener('resize', onResize);
+onResize();
+
+/* ============================================================
+   12. MAIN LOOP
+   ============================================================ */
+const parallax = new THREE.Vector2();
+const clock = new THREE.Clock();
+
+function updateCarousel(dt){
+  if (state.mode !== 'menu' && state.mode !== 'transition') return;
+  if (!state.category) return;
+  const car = carousels.get(state.category.id);
+  const n = itemCount();
+
+  // idle snap toward nearest item
+  if (performance.now() - lastInput > 180){
+    const nearest = THREE.MathUtils.clamp(Math.round(state.target), 0, n - 1);
+    state.target += (nearest - state.target) * 0.07;
+  }
+  const damp = REDUCED ? 30 : 7.5;
+  state.rot += (state.target - state.rot) * Math.min(1, damp * dt);
+
+  car.cards.forEach(({ group, dim, idx }) => {
+    const rel = idx - state.rot;
+    const a = Math.abs(rel);
+    const ang = rel * CFG.spacing;
+    group.position.set(0, CFG.radius * Math.sin(ang), CFG.radius * (Math.cos(ang) - 1));
+    group.rotation.x = -ang;
+    const s = Math.max(0.62, 1 - a * 0.17) * state.menuScale;
+    group.scale.setScalar(s);
+    group.visible = a < 2.7;
+    dim.material.opacity = THREE.MathUtils.clamp((a - 0.25) / 1.25, 0, 1) * 0.62;
+  });
+  updateInfo();
+}
+
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t = clock.elapsedTime;
+  stepTweens(dt);
+
+  // parallax + idle sway
+  if (!REDUCED){
+    parallax.x += (pointerNDC.x * (state.mode === 'menu' ? .12 : .35) - parallax.x) * 0.04;
+    parallax.y += (-pointerNDC.y * (state.mode === 'menu' ? .08 : .2) - parallax.y) * 0.04;
+  }
+  const sway = (!REDUCED && state.mode === 'wall') ? Math.sin(t * .4) * .12 : 0;
+  camera.position.set(camPos.x + parallax.x, camPos.y + parallax.y + sway * .3, camPos.z);
+  camera.lookAt(0, state.mode === 'menu' ? 0 : .1, 0);
+
+  // panel hover (wall mode)
+  if (state.mode === 'wall'){
+    raycaster.setFromCamera(pointerNDC, camera);
+    const hits = raycaster.intersectObjects(wallGroup.children, true);
+    let hovered = null;
+    if (hits.length){ let o = hits[0].object; while (o && !o.userData.cat) o = o.parent; hovered = o; }
+    canvas.style.cursor = hovered ? 'pointer' : 'default';
+    panels.forEach(p => {
+      const h = p === hovered ? 1 : 0;
+      p.userData.hover += (h - p.userData.hover) * 0.12;
+      const k = p.userData.hover;
+      p.rotation.y = pointerNDC.x * .1 * k;
+      p.rotation.x = -pointerNDC.y * .07 * k;
+      p.position.z = k * .22;
+      p.children[0].material.color.setHex(0x7d7263).lerp(new THREE.Color(0x9a8f7b), k);
+    });
+  } else {
+    canvas.style.cursor = state.mode === 'menu' ? 'grab' : 'default';
+    panels.forEach(p => { p.rotation.x *= .9; p.rotation.y *= .9; p.position.z *= .9; });
+  }
+
+  updateCarousel(dt);
+
+  if (dust && !REDUCED){
+    dust.rotation.y = t * .015;
+    dust.position.y = Math.sin(t * .25) * .3;
+  }
+  glow.material.opacity = .45 + Math.sin(t * .5) * .06;
+
+  renderer.render(scene, camera);
+}
+
+/* ============================================================
+   13. BOOT — wait for fonts so canvas textures render correctly
+   ============================================================ */
+Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]).then(() => {
+  // Fonts have now loaded — regenerate canvas textures that use Fraunces/Inter
+  // so panel titles render in the correct typeface, then start the loop.
+  const freshTex = makePlaceholderTexture();
+  placeholderTex.image = freshTex.image; placeholderTex.needsUpdate = true;
+  panels.forEach((p, i) => {
+    const titleMesh = p.children[3];
+    titleMesh.material.map = makeCategoryTitleTexture(CATEGORIES[i].name, i);
+    titleMesh.material.needsUpdate = true;
+  });
+  animate();
+});
+</script>
+</body>
+</html>
