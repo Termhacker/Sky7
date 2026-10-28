@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sky7
+      POSTGRES_USER: sky7
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-this-local-password}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - sky7_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sky7 -d sky7"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  sky7_postgres_data:

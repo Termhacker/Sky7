@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>SKY7 — Above the City</title>
+<meta name="description" content="SKY7 — a premium restaurant menu experience." />
+<meta name="theme-color" 	content="#C0B8AD" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@200;300;400;500&family=Figtree:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   SKY7 — mushroom-grey architectural menu
+   ============================================================ */
+:root{
+  --stone:#B8B3A8; --stone-2:#CBC6BB; --bone:#C0BBAD; --paper:#EEEAE2; --linen:#F3F0E9;
+  --ink:#292A27; --ink-2:#363732; --sage:#87907A; --sage-2:#A0A894; --sage-ink:#454D3B;
+  --display:"Lexend",system-ui,sans-serif; --text:"Figtree","Lexend",system-ui,sans-serif;
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --edge:clamp(24px,5.5vw,104px);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bone);color:var(--ink);font-family:var(--text);overflow:hidden;
+  -webkit-font-smoothing:antialiased;overscroll-behavior:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible{outline:2px solid var(--sage-ink);outline-offset:4px}
+
+/* soft daylight behind the canvas: lightest top-left, mushroom at the far right */
+.atmosphere{position:fixed;inset:0;z-index:0;pointer-events:none;background:
+  radial-gradient(70% 80% at 18% 8%,rgba(214,208,198,.9),transparent 70%),
+  linear-gradient(112deg,#CFC8BD 0%,#C0B8AD 46%,#AFA79B 100%)}canvas#scene{position:fixed;inset:0;z-index:1;display:block;touch-action:none}
+.daylight{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(80% 65% at 12% 0%,rgba(255,252,245,.30),transparent 62%),linear-gradient(115deg,transparent 40%,rgba(41,42,39,.09) 100%)}
+.grain{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.07;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ---------- header ---------- */
+header{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;justify-content:space-between;
+  align-items:center;padding:clamp(20px,3vw,34px) var(--edge)}
+.logo{font:500 15px/1 var(--display);letter-spacing:.2em;color:var(--ink)}
+.logo b{font-weight:500;color:var(--sage-ink)}
+.back{font:400 13px/1 var(--text);color:var(--ink-2);padding:8px 0;border-bottom:1px solid rgba(41,42,39,.35);
+  opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .6s,transform .6s,border-color .3s}
+.back.show{opacity:1;transform:none;pointer-events:auto}
+.back:hover{border-color:var(--sage-ink)}
+
+/* ---------- hero ---------- */
+.hero{position:fixed;inset:0;z-index:8;display:grid;place-content:center;justify-items:center;text-align:center;
+  pointer-events:none;transition:opacity 1s var(--ease),visibility 1s}
+.hero::before{content:"";position:absolute;width:min(90vw,1100px);aspect-ratio:1.6;
+  background:radial-gradient(closest-side,rgba(205,198,188,.92) 30%,rgba(205,198,188,0));z-index:-1}
+.hero.gone{opacity:0;visibility:hidden}
+.hero h1{font:200 clamp(88px,19vw,280px)/.9 var(--display);letter-spacing:-.01em;color:var(--ink);
+  opacity:0;animation:rise 1.3s .25s var(--ease) forwards}
+.hero h1 span{color:var(--sage-ink)}
+.hero .tag{font:300 clamp(16px,1.7vw,20px)/1.5 var(--text);color:var(--ink-2);margin-top:28px;
+  opacity:0;animation:rise 1.2s .5s var(--ease) forwards}
+.hero .explore{pointer-events:auto;margin-top:44px;font:400 14px/1 var(--display);letter-spacing:.04em;
+  padding:17px 40px;border:1px solid var(--ink);color:var(--ink);opacity:0;
+  animation:rise 1.2s .7s var(--ease) forwards;transition:background .4s,color .4s}
+.hero .explore:hover{background:var(--ink);color:var(--linen)}
+@keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+
+/* ---------- left story panel (≈ 3/4 of the screen) ---------- */
+.story{position:fixed;z-index:9;left:var(--edge);top:50%;transform:translateY(-52%);
+  width:calc(72vw - var(--edge) * 1.6);max-width:900px;pointer-events:none;transition:opacity .7s}
+.story.hidden{opacity:0}
+.story .cat{display:flex;align-items:center;gap:16px;font:400 14px/1 var(--text);color:var(--sage-ink);margin-bottom:clamp(20px,3.4vh,40px)}
+.story .cat::before{content:"";width:40px;height:1px;background:var(--sage)}
+.story h2{font:300 clamp(46px,7.2vw,124px)/.98 var(--display);letter-spacing:-.025em;color:var(--ink);
+  margin-bottom:clamp(22px,3.8vh,44px);text-wrap:balance}
+.story .desc{font:400 clamp(16px,1.35vw,19px)/1.75 var(--text);color:var(--ink-2);max-width:44ch;margin-bottom:clamp(26px,4.6vh,54px)}
+.story .meta{display:flex;align-items:baseline;gap:22px;flex-wrap:wrap}
+.story .price{font:300 clamp(26px,2.6vw,38px)/1 var(--display);letter-spacing:-.01em}
+.story .note{font:400 14px/1 var(--text);color:var(--sage-ink);padding-left:22px;border-left:1px solid var(--stone)}
+.story .note:empty{display:none}
+.story.out .price{color:rgba(41,42,39,.45);text-decoration:line-through;text-decoration-thickness:1px}
+.swap .cat,.swap h2,.swap .desc,.swap .meta{animation:up .85s var(--ease) both}
+.swap h2{animation-delay:.05s}.swap .desc{animation-delay:.14s}.swap .meta{animation-delay:.22s}
+@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+/* ---------- quiet navigation ---------- */
+.cats{position:fixed;z-index:10;left:var(--edge);bottom:clamp(20px,4vh,40px);display:flex;gap:6px 26px;flex-wrap:wrap;
+  transition:opacity .7s,transform .7s}
+.cats.hidden{opacity:0;transform:translateY(12px);pointer-events:none}
+.cats button{font:400 13px/1 var(--text);color:rgba(54,55,50,.62);padding:8px 0;border-bottom:1px solid transparent;transition:color .3s,border-color .3s}
+.cats button:hover{color:var(--ink)}
+.cats button.active{color:var(--ink);border-color:var(--sage)}
+.dishnav{position:fixed;z-index:10;left:var(--edge);bottom:clamp(70px,11vh,110px);display:flex;align-items:center;gap:18px;transition:opacity .6s}
+.dishnav.hidden{opacity:0;pointer-events:none}
+.dishnav .ct{font:300 15px/1 var(--display);color:var(--ink-2);min-width:64px;letter-spacing:.04em}
+.dishnav .ct b{font-weight:400;color:var(--ink)}
+.dishnav button{width:40px;height:40px;display:grid;place-items:center;border:1px solid rgba(41,42,39,.3);color:var(--ink);transition:background .3s,color .3s,border-color .3s}
+.dishnav button:hover{background:var(--ink);color:var(--linen);border-color:var(--ink)}
+.dishnav svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.3}
+.wallhint{position:fixed;z-index:9;left:0;right:0;top:clamp(28px,3.6vw,44px);text-align:center;font:400 14px/1 var(--text);
+  color:var(--ink-2);transition:opacity .7s;pointer-events:none}
+.wallhint.hidden{opacity:0}
+
+/* ---------- portrait / small: story drops below the chamber ---------- */
+@media (max-aspect-ratio:9/10),(max-width:760px){
+  .story{left:var(--edge);right:var(--edge);width:auto;top:auto;bottom:clamp(96px,15vh,130px);transform:none}
+  .story .cat{margin-bottom:12px}
+  .story h2{font-size:clamp(36px,10.5vw,64px);margin-bottom:14px}
+  .story .desc{font-size:15px;line-height:1.6;margin-bottom:16px;max-width:none;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .dishnav{left:var(--edge);right:auto;bottom:auto;top:calc(26vh - 20px);flex-direction:column;align-items:flex-start;gap:10px}
+  .dishnav .ct{order:-1;margin-bottom:6px}
+  .wallhint{top:72px}
+  .cats{gap:2px 16px;bottom:14px}
+  .cats button{font-size:12px;padding:6px 0}
+}
+@media (max-height:520px) and (orientation:landscape){.story .desc{display:none}.story h2{font-size:clamp(34px,7vw,60px)}}
+@media (prefers-reduced-motion:reduce){
+  .hero h1,.hero .tag,.hero .explore{animation-duration:.01s;animation-delay:0s}
+  .swap .cat,.swap h2,.swap .desc,.swap .meta{animation:none}
+}
+
+/* ============================================================
+   PLATE STAGE LAYOUT — only active when the stage initialised (html.has-stage)
+   The plate is drawn in WebGL; the text sits centred beneath it.
+   To left-align the text instead, see the two "LEFT-ALIGN" notes below.
+   ============================================================ */
+.story.pending{opacity:0}
+.story.quiet{opacity:.28}
+.has-stage .story{left:0;top:58.5vh;bottom:auto;transform:none;width:72vw;max-width:none;
+  padding:0 clamp(24px,5vw,90px);display:flex;flex-direction:column;align-items:center;text-align:center} /* LEFT-ALIGN: align-items:flex-start;text-align:left */
+.has-stage .story .cat{justify-content:center;margin-bottom:clamp(8px,1.4vh,14px)}
+.has-stage .story .cat::before{display:none}
+.has-stage .story h2{font-size:clamp(30px,min(4.6vw,7.4vh),78px);margin-bottom:clamp(10px,1.8vh,20px);max-width:100%}
+.has-stage .story .desc{font-size:clamp(14px,min(1.2vw,2.3vh),18px);line-height:1.6;max-width:50ch;margin:0 auto clamp(12px,2.2vh,24px)} /* LEFT-ALIGN: margin-left:0 */
+.has-stage .story .meta{justify-content:center;gap:clamp(14px,1.6vw,22px)}
+.has-stage .story .price{font-size:clamp(22px,min(2.2vw,3.6vh),34px)}
+.has-stage .story .note{padding-left:clamp(14px,1.6vw,22px)}
+.has-stage .dishnav{left:auto;right:calc(30vw + 22px);top:50%;bottom:auto;transform:translateY(-50%);flex-direction:column;gap:12px}
+.has-stage .dishnav #upBtn{order:1}
+.has-stage .dishnav .ct{order:2;min-width:0;text-align:center}
+.has-stage .dishnav #downBtn{order:3}
+
+/* the text writes itself in beneath the plate: label, name, then the description word by word, then the price */
+.has-stage .swap .cat{animation-delay:calc(var(--t0, 0s) - .1s)}
+.has-stage .swap h2{animation-delay:var(--t0, 0s)}
+.has-stage .swap .desc{animation:none}
+.has-stage .swap .w{display:inline-block;animation:wordin .8s var(--ease) both;animation-delay:calc(var(--t0, 0s) + .3s + var(--i, 0) * 48ms)}
+.has-stage .swap .meta{animation-delay:calc(var(--t0, 0s) + .55s + var(--wn, 0) * 48ms)}
+.has-stage .desc .w{display:inline-block}
+@keyframes wordin{from{opacity:0;transform:translateY(.55em)}to{opacity:1;transform:none}}
+
+@media (max-aspect-ratio:9/10){
+  .has-stage .story{left:var(--edge);right:var(--edge);width:auto;top:55vh;bottom:auto;padding:0}
+  .has-stage .story h2{font-size:clamp(30px,9vw,52px)}
+  .has-stage .story .desc{font-size:15px;line-height:1.55;max-width:none;margin:0 auto 14px;-webkit-line-clamp:3}
+  .has-stage .dishnav{left:var(--edge);right:auto;top:68px;bottom:auto;transform:none;flex-direction:row;align-items:center;gap:10px}
+  .has-stage .dishnav .ct{order:0;margin:0 0 0 6px}
+  .has-stage .dishnav #upBtn,.has-stage .dishnav #downBtn{order:0;width:36px;height:36px}
+}
+@media (max-height:560px) and (min-aspect-ratio:10/9){   /* short landscape screens: keep only name + price under the plate */
+  .has-stage .story{top:55vh}
+  .has-stage .story .cat,.has-stage .story .desc{display:none}
+  .has-stage .story h2{font-size:clamp(24px,8vh,44px);margin-bottom:8px}
+  .has-stage .story .price{font-size:20px}
+}
+@media (prefers-reduced-motion:reduce){
+  .has-stage .swap .cat,.has-stage .swap h2,.has-stage .swap .meta,.has-stage .swap .w{animation:none}
+}
+</style>
+</head>
+<body>
+
+<div class="atmosphere" aria-hidden="true"></div>
+<canvas id="scene" aria-label="SKY7 interactive 3D menu"></canvas>
+<div class="daylight" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<header>
+  <button class="logo" id="logoBtn" aria-label="SKY7 home">SKY<b>7</b></button>
+  <button class="back" id="backBtn" aria-label="Return to categories">&#8592;&nbsp; Categories</button>
+</header>
+
+<main>
+  <section class="hero" id="hero" aria-label="Introduction">
+    <h1>SKY<span>7</span></h1>
+    <p class="tag">Dinner above the noise of the city.</p>
+    <button class="explore" id="exploreBtn">Explore the menu</button>
+  </section>
+
+  <p class="wallhint hidden" id="wallhint">Select an opening to begin</p>
+
+  <!-- LEFT: the story of whatever is on the right -->
+  <aside class="story hidden" id="story" aria-live="polite">
+    <div class="cat" id="infoCat"></div>
+    <h2 id="infoName"></h2>
+    <p class="desc" id="infoDesc"></p>
+    <div class="meta"><span class="price" id="infoPrice"></span><span class="note" id="infoNote"></span></div>
+  </aside>
+
+  <div class="dishnav hidden" id="dishnav">
+    <button id="upBtn" aria-label="Previous dish"><svg viewBox="0 0 14 14"><path d="M2 9l5-5 5 5"/></svg></button>
+    <button id="downBtn" aria-label="Next dish"><svg viewBox="0 0 14 14"><path d="M2 5l5 5 5-5"/></svg></button>
+    <span class="ct"><b id="infoIdx">01</b> / <span id="infoTotal">05</span></span>
+  </div>
+  <nav class="cats hidden" id="catnav" aria-label="Menu categories"></nav>
+</main>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+
+/* ============================================================
+   1. DATA  —  ← EDIT EVERYTHING HERE. Add images later by
+   setting  image: "images/your-dish.jpg"  on any item (or category).
+   ============================================================ */
+const CATEGORIES = [
+  { id:'mains', name:'Main Dishes', items:[
+    { name:'Jollof Rice', desc:'Smoky party-style rice, slow-cooked in a rich tomato and pepper base, finished over open flame.', price:'₦4,500', image:'', available:true, badge:'Chef’s Pick' },
+    { name:'Egusi & Pounded Yam', desc:'Ground melon seed stew with spinach and palm oil, served with silky hand-pounded yam.', price:'₦6,200', image:'', available:true },
+    { name:'Pepper Soup', desc:'Fragrant native-spice broth with fresh catfish, scent leaf and a quiet hum of heat.', price:'₦5,800', image:'', available:true },
+    { name:'Ofada Rice & Ayamase', desc:'Local ofada rice with green pepper designer stew and assorted slow-cooked meats.', price:'₦6,500', image:'', available:true },
+    { name:'Fisherman Okra', desc:'Seafood-laden okra soup with prawns, periwinkle and crab, drawn straight from the coast.', price:'₦7,200', image:'', available:false },
+  ]},
+  { id:'starters', name:'Starters', items:[
+    { name:'Suya Skewers', desc:'Flame-grilled beef in house-ground yaji spice, with fresh onion and tomato.', price:'₦3,800', image:'', available:true, badge:'Chef’s Pick' },
+    { name:'Prawn Toast', desc:'Golden sesame-crusted prawn toast with a chilli-lime dipping sauce.', price:'₦3,200', image:'', available:true },
+    { name:'Akara & Pepper Dip', desc:'Whipped bean fritters, fried to order, with a roasted red pepper dip.', price:'₦2,500', image:'', available:true },
+    { name:'Plantain Cups', desc:'Crisp cups of ripe plantain filled with peppered chicken and avocado crema.', price:'₦2,900', image:'', available:true },
+  ]},
+  { id:'grills', name:'Grills', items:[
+    { name:'Charcoal Chicken', desc:'Half bird marinated overnight, charred over hardwood coals, served with fried yam.', price:'₦7,500', image:'', available:true, badge:'Chef’s Pick' },
+    { name:'Beef Asun', desc:'Smoky char-grilled beef tossed in scotch-bonnet butter and bell peppers.', price:'₦6,800', image:'', available:true },
+    { name:'Grilled Croaker', desc:'Whole croaker scored and grilled, brushed with garlic-palm oil and lime.', price:'₦9,200', image:'', available:true },
+    { name:'Lamb Chops', desc:'Tommy-rack lamb chops, charred crust, rosemary jus, smoked aubergine.', price:'₦11,000', image:'', available:false },
+  ]},
+  { id:'sides', name:'Sides', items:[
+    { name:'Fried Plantain', desc:'Caramel-edged dodo, salted while hot. Dangerously easy to finish.', price:'₦2,200', image:'', available:true },
+    { name:'Coconut Rice', desc:'Fragrant rice steamed in coconut milk with sweet peppers and thyme.', price:'₦3,000', image:'', available:true },
+    { name:'Moin Moin', desc:'Steamed bean pudding with egg and smoked prawn, wrapped in leaf.', price:'₦2,000', image:'', available:true },
+    { name:'Salad of the Day', desc:'Whatever the market gave us this morning, dressed simply and well.', price:'₦2,800', image:'', available:true },
+  ]},
+  { id:'drinks', name:'Drinks', vessel:'glass', items:[
+    { name:'Chapman', desc:'The classic — grenadine, citrus, bitters and a whisper of almond, over crushed ice.', price:'₦2,500', image:'', available:true, badge:'Chef’s Pick' },
+    { name:'Zobo Spritz', desc:'Hibiscus cold-brew shaken with ginger and lime, topped with soda.', price:'₦2,000', image:'', available:true },
+    { name:'Palm Wine Cooler', desc:'Fresh palm wine over ice with a squeeze of lime. Drink it young.', price:'₦3,000', image:'', available:true },
+    { name:'Ginger Beer', desc:'House-fermented, fiery and cold. Non-alcoholic, fully awake.', price:'₦1,800', image:'', available:false },
+  ]},
+  { id:'desserts', name:'Desserts', items:[
+    { name:'Agege Toast', desc:'Crisped agege bread, brown-sugar butter, vanilla chantilly.', price:'₦2,800', image:'', available:true },
+    { name:'Coconut Candy Parfait', desc:'Layers of coconut candy crumble, coconut cream and toasted flakes.', price:'₦3,200', image:'', available:true },
+    { name:'Plantain Tarte', desc:'Caramelised plantain on crisp pastry with palm-sugar ice cream.', price:'₦3,600', image:'', available:true, badge:'Chef’s Pick' },
+  ]},
+];
+
+/* ============================================================
+   2. CONFIG / STATE
+   ============================================================ */
+const CFG = {
+  fov: 40, maxDpr: 2,
+  radius: 6.2,            // drum radius of the food carousel (unchanged idea from the prototype)
+  spacing: 0.66,          // angular spacing between dishes (radians)
+  plateR: 2.1,           // plate radius in the chamber
+  foodR: 0.68,            // radius of the food image inside the plate well (plate-radius units)
+  // the curved right-hand chamber
+  chRi: 3.4, chT: 0.5, chArc: 2.9, chH: 11.4, chCz: 0.6,
+  chShareP: 0.38,         // same, on portrait screens (leaves the left for the plate)
+  chShare: 0.28,          // fraction of screen width the chamber occupies (landscape)
+  // the opening wall
+  OW: 2.6, OH: 3.6, pitchX: 5.0, pitchY: 4.9,
+};
+const COL = { wall:0xC4C2BA, back:0xA4A29A, chamber:0xB0ADA4, ledge:0xDDDBD3, plate:0xF4F2EC };
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const COARSE = window.matchMedia('(pointer: coarse)').matches;
+
+const state = {
+  mode: 'hero',            // hero | wall | menu | transition
+  category: null, rot: 0, target: 0, activeIdx: -1,
+  unroll: 0, chFade: 0,
+  vo: { x: 0, y: 0 },      // view offset: fraction of the screen the scene is pushed right / up
+  voTarget: { x: 0, y: 0 },
+  portrait: false,
+};
+
+/* ============================================================
+   3. TINY TWEEN ENGINE  (now with optional delay)
+   ============================================================ */
+const tweens = new Set();
+const easeInOutCubic = k => k < .5 ? 4*k*k*k : 1 - Math.pow(-2*k + 2, 3) / 2;
+const easeOutCubic = k => 1 - Math.pow(1-k, 3);
+const { clamp, lerp } = THREE.MathUtils;
+function tween({ dur = 1, delay = 0, ease = easeInOutCubic, onUpdate, onComplete }){
+  tweens.add({ t: -(REDUCED ? 0 : delay), dur: REDUCED ? Math.min(dur, 0.01) : dur, ease, onUpdate, onComplete });
+}
+function stepTweens(dt){
+  for (const tw of tweens){
+    tw.t += dt; if (tw.t < 0) continue;
+    const k = Math.min(tw.t / tw.dur, 1);
+    tw.onUpdate && tw.onUpdate(tw.ease(k));
+    if (k >= 1){ tweens.delete(tw); tw.onComplete && tw.onComplete(); }
+  }
+}
+
+/* ============================================================
+   4. TEXTURE FACTORIES  (canvas-generated, no external images)
+   ============================================================ */
+const mk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
+const tex = (c, srgb = true) => { const t = new THREE.CanvasTexture(c); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; };
+
+// soft plaster grain, used as a bump map so every surface feels like stone, never flat colour
+function makeGrainTexture(){
+  const c = mk(256, 256), x = c.getContext('2d'), im = x.createImageData(256, 256);
+  for (let i = 0; i < im.data.length; i += 4){ const v = 118 + Math.random() * 20; im.data[i] = im.data[i+1] = im.data[i+2] = v; im.data[i+3] = 255; }
+  x.putImageData(im, 0, 0);
+  x.filter = 'blur(1.4px)'; x.globalAlpha = .7; x.drawImage(c, 0, 0);
+  const t = tex(c, false); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+}
+// the empty food well: quiet porcelain glaze with one faint ring. Intentional, not a "placeholder".
+function makeWellTexture(){
+  const c = mk(512, 512), x = c.getContext('2d');
+  const g = x.createRadialGradient(236, 214, 20, 256, 256, 300);
+  g.addColorStop(0, '#F2EFE8'); g.addColorStop(.65, '#E6E2D8'); g.addColorStop(1, '#D5D0C4');
+  x.fillStyle = g; x.fillRect(0, 0, 512, 512);
+  x.strokeStyle = 'rgba(41,42,39,.07)'; x.lineWidth = 2;
+  x.beginPath(); x.arc(256, 256, 150, 0, 7); x.stroke();
+  x.beginPath(); x.arc(256, 256, 160, 0, 7); x.stroke();
+  for (let i = 0; i < 1400; i++){ x.fillStyle = `rgba(41,42,39,${Math.random()*.035})`; x.fillRect(Math.random()*512, Math.random()*512, 1.5, 1.5); }
+  return tex(c);
+}
+function makeLabelTexture(name, i){
+  const c = mk(640, 160), x = c.getContext('2d');
+  x.fillStyle = '#5E6753'; x.font = '400 30px Figtree, sans-serif'; x.fillText('0' + (i + 1), 4, 38);
+  x.fillStyle = '#292A27'; x.font = '300 62px Lexend, sans-serif'; x.fillText(name, 2, 118);
+  return tex(c);
+}
+function makeGlowTexture(){
+  const c = mk(256, 256), x = c.getContext('2d');
+  const g = x.createRadialGradient(128, 150, 8, 128, 128, 128);
+  g.addColorStop(0, 'rgba(255,253,247,.9)'); g.addColorStop(.55, 'rgba(255,253,247,.25)'); g.addColorStop(1, 'rgba(255,253,247,0)');
+  x.fillStyle = g; x.fillRect(0, 0, 256, 256); return tex(c);
+}
+
+/* ============================================================
+   5. RENDERER / SCENE / LIGHT  (bright, natural, soft)
+   ============================================================ */
+const canvas = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, CFG.maxDpr));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;   // procedural: no HDR download
+
+const camera = new THREE.PerspectiveCamera(CFG.fov, 1, 0.1, 160);
+const camPos = new THREE.Vector3(0, 0, 24);
+camera.position.copy(camPos);
+
+scene.add(new THREE.HemisphereLight(0xF4F2EC, 0xB8B6AE, .9));
+const sun = new THREE.DirectionalLight(0xFFF7EC, 3.0);           // window daylight from the upper left
+sun.position.set(-8, 11, 18);
+sun.castShadow = true;
+sun.shadow.mapSize.set(COARSE ? 2048 : 4096, COARSE ? 2048 : 4096);
+Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 26, bottom: -26, near: 4, far: 70 });
+sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.04;
+scene.add(sun);
+const bounce = new THREE.DirectionalLight(0xE4E0D7, 0.45); bounce.position.set(10, -4, 8); scene.add(bounce);
+
+const grain = makeGrainTexture();
+const stoneMat = (color, rep, bump = .5, env = .3) => {
+  const t = grain.clone(); t.needsUpdate = true; t.repeat.set(rep, rep);
+  return new THREE.MeshStandardMaterial({ color, roughness: .94, bumpMap: t, bumpScale: bump, envMapIntensity: env });
+};
+
+/* --- the plate: lathe-turned porcelain, real rim, well and foot --- */
+const plateProfile = [[0,.05],[.6,.05],[.7,.066],[.78,.11],[.9,.142],[.98,.15],[1,.13],[.99,.09],[.9,.03],[.5,0],[0,0]].map(p => new THREE.Vector2(p[0], p[1]));
+const plateGeo = new THREE.LatheGeometry(plateProfile, 96);
+const foodGeo = new THREE.CircleGeometry(CFG.foodR, 72);
+const wellTex = makeWellTexture();
+const texLoader = new THREE.TextureLoader();
+
+function makePlate(R, image){
+  const g = new THREE.Group();
+  const inner = new THREE.Group(); inner.scale.setScalar(R); inner.rotation.x = Math.PI / 2 - 0.14;   // faces the viewer, leaning back a little
+  const body = new THREE.Mesh(plateGeo, new THREE.MeshPhysicalMaterial({
+    color: COL.plate, roughness: .3, metalness: 0, clearcoat: .55, clearcoatRoughness: .3, envMapIntensity: .55 }));
+  body.castShadow = body.receiveShadow = true;
+  const food = new THREE.Mesh(foodGeo, new THREE.MeshStandardMaterial({
+    map: wellTex, roughness: .6, envMapIntensity: .3, polygonOffset: true, polygonOffsetFactor: -2 }));
+  food.rotation.x = -Math.PI / 2; food.position.y = .056; food.receiveShadow = true;
+  inner.add(body, food); g.add(inner);
+  applyImage(image, food);
+  return { group: g, inner, body, food };
+}
+function applyImage(src, mesh){            // ← drop-in point for real photos (square-cropped into the plate)
+  if (!src) return;
+  texLoader.load(src, t => {
+    t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+    const a = t.image.width / t.image.height;
+    if (a > 1){ t.repeat.set(1 / a, 1); t.offset.set((1 - 1 / a) / 2, 0); } else { t.repeat.set(1, a); t.offset.set(0, (1 - a) / 2); }
+    mesh.material.map = t; mesh.material.needsUpdate = true;
+  }, undefined, () => console.warn('SKY7: could not load image', src));
+}
+const baseCol = new THREE.Color(COL.plate), darkCol = new THREE.Color(0x8F8B82);
+function fadeMat(m, f){ const tr = f < .999 || !!m.userData.alpha;   // alpha textures (labels, glow) must stay transparent
+  m.opacity = f; if (m.transparent !== tr){ m.transparent = tr; m.needsUpdate = true; } }
+
+/* ============================================================
+   5b. STEMMED WINE GLASS — used by any category that has  vessel:'glass'
+   Everything glass-related lives here (plus a few clearly marked hooks).
+   Categories without  vessel:'glass'  keep their plates untouched.
+   ============================================================ */
+renderer.localClippingEnabled = true;       // lets the big glass's liquid be cut by a level, world-space plane
+
+// ---- WHAT EACH DRINK LOOKS LIKE -------------------------------------------------------------
+// The liquid colour comes from the menu item: its name is matched first, then its description.
+// Add a row for any new drink. Or set  color:'#c0392b'  on a single menu item to force a colour.
+const DRINK_COLORS = [
+  [/chapman/i,                                              0xCC2A47],   // bright red-pink
+  [/zobo|sobo|hibiscus/i,                                   0x7A1038],   // deep ruby
+  [/palm\s*wine/i,                                          0xEDE5CC],   // milky cream
+  [/ginger\s*(beer|ale)/i,                                  0xB9761F],   // golden amber
+  [/malt/i,                                                 0x3B2112],
+  [/cola|coke|pepsi/i,                                      0x2A1409],
+  [/fanta|orange/i,                                         0xF18A1E],
+  [/sprite|7\s*up|lemonade|lime/i,                          0xE6EDB0],
+  [/red\s*wine|merlot|cabernet|shiraz/i,                    0x5A0F20],
+  [/ros[eé]/i,                                              0xE9A3A8],
+  [/white\s*wine|chardonnay|sauvignon|champagne|prosecco/i, 0xE8D88F],
+  [/lager|beer|stout/i,                                     0xD5A024],
+  [/mango/i, 0xF2B01E], [/pineapple/i, 0xF0D24A], [/watermelon/i, 0xE8546A], [/coconut/i, 0xF3EEDD],
+  [/water/i,                                                0xDCEBF0],
+];
+const DRINK_DEFAULT = 0xE3C77A;             // pale gold, used when nothing matches
+function drinkColor(item){
+  if (item.color) return new THREE.Color(item.color);
+  for (const text of [item.name || '', item.desc || '']){
+    for (const [rx, hex] of DRINK_COLORS) if (rx.test(text)) return new THREE.Color(hex);
+  }
+  return new THREE.Color(DRINK_DEFAULT);
+}
+
+// ---- the glass profile (in "glass units"; rotated around Y to make the solid) ------------------
+const GLASS = { floor: 1.10, rim: 2.30, center: 1.15, wall: .034 };
+const GLASS_K = .86;                          // glass size relative to a plate of the same radius
+const V2 = (x, y) => new THREE.Vector2(x, y);
+const glassData = (() => {
+  const ctrl = [[.5, 2.3], [.53, 2.15], [.585, 1.95], [.62, 1.72], [.6, 1.52], [.5, 1.34], [.3, 1.17], [.12, 1.07], [.056, 1.0]].map(p => V2(p[0], p[1]));
+  const outer = new THREE.SplineCurve(ctrl).getPoints(64);                       // outside of the bowl, rim → stem
+  const cav = outer.filter(p => p.y >= GLASS.floor).reverse()                    // inside of the bowl, floor → rim
+    .map(p => V2(Math.max(0, p.x - GLASS.wall), p.y));
+  const c = GLASS.center, Y = y => y - c, bowl = [V2(0, Y(GLASS.floor))];
+  cav.forEach(p => bowl.push(V2(p.x, Y(p.y))));
+  bowl.push(V2((cav[cav.length - 1].x + outer[0].x) / 2, Y(2.312)));              // rounded lip
+  outer.forEach(p => bowl.push(V2(p.x, Y(p.y))));
+  return { bowl, cavY: cav.map(p => p.y - c), cavR: cav.map(p => Math.max(0, p.x - .004)) };
+})();
+// stem + foot. k scales the stem thickness: 1 = the fine stem of the big glass, 1.5 = a sturdier stem so the
+// small selector / wall glasses do not shimmer or vanish at small sizes.
+const stemAndFoot = k => [[.036 * k, .93], [.03 * k, .75], [.027 * k, .45], [.036 * k, .2], [.07 + .02 * k, .1],
+  [.3, .07], [.5, .045], [.558, .03], [.562, .014], [.55, 0], [.4, .004], [.2, .02], [0, .032]]
+  .map(p => V2(p[0], p[1] - GLASS.center));
+const glassGeo = new THREE.LatheGeometry([...glassData.bowl, ...stemAndFoot(1)], 72);       // big glass
+const glassGeoSel = new THREE.LatheGeometry([...glassData.bowl, ...stemAndFoot(1.5)], 72);  // selector + wall
+
+function rAt(y){                                  // liquid radius at height y (centred glass units)
+  const Y = glassData.cavY, R = glassData.cavR;
+  if (y <= Y[0]) return R[0];
+  if (y >= Y[Y.length - 1]) return R[R.length - 1];
+  let i = 1; while (Y[i] < y) i++;
+  return R[i - 1] + (R[i] - R[i - 1]) * (y - Y[i - 1]) / (Y[i] - Y[i - 1]);
+}
+const levelAt = f => (GLASS.floor - GLASS.center) + clamp(f, 0, 1) * (GLASS.rim - GLASS.floor);
+function liquidProfile(level){                    // outer skin of the liquid, listed top → floor → axis
+  const Y = glassData.cavY, R = glassData.cavR, pts = [V2(rAt(level), level)];
+  for (let i = Y.length - 1; i >= 0; i--) if (Y[i] < level - 1e-4) pts.push(V2(R[i], Y[i]));
+  pts.push(V2(0, Y[0]));
+  return pts;
+}
+const liquidCache = {};
+const getFullLiquid = () => (liquidCache.full ??= new THREE.LatheGeometry(liquidProfile(levelAt(1)), 64));
+const getStaticLiquid = f => (liquidCache['w' + f] ??= new THREE.LatheGeometry(liquidProfile(levelAt(f)), 48));
+const getStaticCap = f => (liquidCache['c' + f] ??= new THREE.CircleGeometry(rAt(levelAt(f)), 48).rotateX(-Math.PI / 2).translate(0, levelAt(f), 0));
+
+// Clear glass: almost invisible face-on, bright toward the edges (Fresnel), with specular streaks kept visible.
+function makeGlassMaterial(){
+  const m = new THREE.MeshPhysicalMaterial({ color: 0xFFFFFF, roughness: .04, metalness: 0, clearcoat: 1, clearcoatRoughness: .04,
+    envMapIntensity: 2.4, transparent: true, depthWrite: false });
+  m.userData.alpha = true;                        // keep transparency on when fade reaches 1 (see fadeMat)
+  m.onBeforeCompile = shader => {
+    shader.fragmentShader = shader.fragmentShader.replace('#include <opaque_fragment>', `
+      float gFres = pow(1.0 - abs(dot(normalize(normal), normalize(vViewPosition))), 2.2);
+      float gSpec = clamp(dot(totalSpecular, vec3(0.333)) * 1.3, 0.0, 1.0);
+      diffuseColor.a = clamp(mix(0.05, 0.9, gFres) + gSpec, 0.0, 1.0) * opacity;
+      #include <opaque_fragment>`);
+  };
+  return m;
+}
+
+// ---- the dynamic liquid surface used by the big glass --------------------------------------------
+const CAP_N = 44;
+function makeCapGeometry(){
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array((CAP_N + 2) * 3), 3));
+  g.setAttribute('normal', new THREE.BufferAttribute(new Float32Array((CAP_N + 2) * 3), 3));
+  const idx = []; for (let i = 1; i <= CAP_N; i++) idx.push(0, i, i + 1);
+  g.setIndex(idx); return g;
+}
+const _pv = new THREE.Vector3(), _pn = new THREE.Vector3(), _pl = new THREE.Plane(), _pi = new THREE.Matrix4();
+// Keeps the surface level in the WORLD while the glass tilts: the wall is clipped by a world plane and the
+// cap is rebuilt as the exact intersection of that plane with the bowl.  `slosh` adds a little lag.
+function updateGlassLiquid(G, fill, slosh){
+  const e = G.inner.matrixWorld.elements, len = Math.hypot(e[4], e[5], e[6]) || 1;
+  const sinT = Math.sqrt(Math.max(0, 1 - (e[5] / len) * (e[5] / len)));            // how far the glass leans from upright
+  fill *= 1 - .5 * THREE.MathUtils.smoothstep(sinT, .35, .95);                      // a strongly leaning glass shows a little less drink
+  const show = fill > .004; G.food.visible = show; if (!show) return;
+  _pv.set(0, levelAt(fill), 0); G.inner.localToWorld(_pv);
+  _pn.set(0, Math.cos(slosh), Math.sin(slosh));
+  G.clip.setFromNormalAndCoplanarPoint(_pn.clone().negate(), _pv);     // world-space plane that keeps the liquid below its surface
+  _pl.setFromNormalAndCoplanarPoint(_pn, _pv).applyMatrix4(_pi.copy(G.inner.matrixWorld).invert());
+  const n = _pl.normal, c = _pl.constant, Y = glassData.cavY, yLo = Y[0], yHi = Y[Y.length - 1];
+  const pos = G.cap.geometry.attributes.position.array, nor = G.cap.geometry.attributes.normal.array;
+  let cx = 0, cy = 0, cz = 0;
+  for (let i = 0; i <= CAP_N; i++){
+    const ph = (i % CAP_N) / CAP_N * Math.PI * 2, cs = Math.cos(ph), sn = Math.sin(ph), a = n.x * cs + n.z * sn;
+    let lo = yLo, hi = yHi, y;
+    const gv = yy => a * rAt(yy) + n.y * yy + c;
+    if (gv(lo) >= 0) y = lo; else if (gv(hi) <= 0) y = hi;
+    else { for (let k = 0; k < 16; k++){ const m = (lo + hi) / 2; if (gv(m) < 0) lo = m; else hi = m; } y = (lo + hi) / 2; }
+    const r = rAt(y), o = (i + 1) * 3;
+    pos[o] = r * cs; pos[o + 1] = y; pos[o + 2] = r * sn; cx += pos[o]; cy += pos[o + 1]; cz += pos[o + 2];
+  }
+  pos[0] = cx / (CAP_N + 1); pos[1] = cy / (CAP_N + 1); pos[2] = cz / (CAP_N + 1);
+  for (let v = 0; v < CAP_N + 2; v++){ nor[v * 3] = n.x; nor[v * 3 + 1] = n.y; nor[v * 3 + 2] = n.z; }
+  G.cap.geometry.attributes.position.needsUpdate = true; G.cap.geometry.attributes.normal.needsUpdate = true;
+}
+
+// color: THREE.Color (or null for an empty glass). fill: 0..1 of the bowl (static liquid). dynamic: the big stage glass.
+function makeGlass(R, color, fill, dynamic, opts = {}){
+  const g = new THREE.Group(), inner = new THREE.Group(); inner.scale.setScalar(R * GLASS_K); g.add(inner);
+  const body = new THREE.Mesh(opts.sel ? glassGeoSel : glassGeo, makeGlassMaterial()); body.renderOrder = 3; inner.add(body);
+  if (opts.lean || opts.tip) inner.rotation.set(opts.tip || 0, 0, opts.lean || 0);   // a slanted pose (selector only)
+  const liq = new THREE.MeshPhysicalMaterial({ color: color ? color.clone() : new THREE.Color(DRINK_DEFAULT),
+    roughness: .12, metalness: 0, clearcoat: .6, clearcoatRoughness: .1, envMapIntensity: .8, transparent: true });
+  liq.userData.alpha = true;
+  const P = { group: g, inner, body, kind: 'glass', rest: GLASS.center * R * GLASS_K, liquidBase: color ? color.clone() : null };
+  if (dynamic){
+    P.clip = new THREE.Plane(new THREE.Vector3(0, -1, 0), 100); liq.clippingPlanes = [P.clip];
+    P.food = new THREE.Mesh(getFullLiquid(), liq);
+    P.capMat = liq.clone(); P.capMat.clippingPlanes = null; P.capMat.side = THREE.DoubleSide; P.capMat.userData.alpha = true;
+    P.cap = new THREE.Mesh(makeCapGeometry(), P.capMat); P.cap.frustumCulled = false; P.cap.renderOrder = 2; P.food.add(P.cap);
+    P.food.visible = false;
+  } else if (fill > 0){
+    P.food = new THREE.Mesh(getStaticLiquid(fill), liq);
+    P.food.add(new THREE.Mesh(getStaticCap(fill), liq));       // same material: same colour, same dimming
+  } else { P.food = new THREE.Mesh(getFullLiquid(), liq); P.food.visible = false; }
+  P.food.renderOrder = 2; inner.add(P.food);
+  return P;
+}
+// One entry point for "the vessel for this dish": a plate, or a glass for categories flagged vessel:'glass'.
+function makeVessel(cat, R, item, selector){
+  if (cat.vessel === 'glass'){
+    try {
+      // selector: ~63% size, slanted, liquid kept level.  wall: empty glass.
+      if (selector) return makeGlass(R * .63, drinkColor(item), .5, true, { sel: true, lean: .49, tip: .26 });
+      return makeGlass(R, item ? drinkColor(item) : null, item ? .5 : 0, false, { sel: true });
+    } catch (err){ console.warn('SKY7: glass failed, using a plate instead:', err); }
+  }
+  return makePlate(R, item ? item.image : cat.image);
+}
+
+// The big glass is drawn in its own pass by a camera that looks straight at it. In the main scene the glass sits
+// well left of the screen centre, and perspective there skews round rims into slanted ellipses (it looked "bent").
+const glassScene = new THREE.Scene(); glassScene.environment = scene.environment;
+glassScene.add(new THREE.HemisphereLight(0xF4F2EC, 0xB8B6AE, .9));
+const gSun = new THREE.DirectionalLight(0xFFF7EC, 3.0); gSun.position.set(-8, 11, 18); glassScene.add(gSun);
+const gBounce = new THREE.DirectionalLight(0xE4E0D7, .45); gBounce.position.set(10, -4, 8); glassScene.add(gBounce);
+const glassCam = new THREE.PerspectiveCamera(CFG.fov, 1, .1, 160);
+const _gv = new THREE.Vector3();
+
+/* ============================================================
+   6. CATEGORY WALL — one architectural wall, six arched openings
+   ============================================================ */
+const wallGroup = new THREE.Group(); scene.add(wallGroup);
+let openings = [], hitPlanes = [], wallMats = [], wallCols = 0;
+const raycaster = new THREE.Raycaster();
+const pointerNDC = new THREE.Vector2(0, 0);
+
+function archPath(x, y, w, h){
+  const p = new THREE.Path(), r = w / 2, top = y + h / 2 - r;
+  p.moveTo(x - r, y - h / 2); p.lineTo(x + r, y - h / 2); p.lineTo(x + r, top);
+  p.absarc(x, top, r, 0, Math.PI, false); p.lineTo(x - r, y - h / 2); return p;
+}
+function disposeGroup(g){ g.traverse(o => { o.geometry && o.geometry.dispose(); }); while (g.children.length) g.remove(g.children[0]); }
+
+function buildWall(cols){
+  disposeGroup(wallGroup); openings = []; hitPlanes = []; wallMats = []; wallCols = cols;
+  const rows = CATEGORIES.length / cols, { OW, OH, pitchY } = CFG, pitchX = cols === 2 ? 3.7 : CFG.pitchX;
+
+  const shape = new THREE.Shape(); const W = 26, H = 22;
+  shape.moveTo(-W, -H); shape.lineTo(W, -H); shape.lineTo(W, H); shape.lineTo(-W, H); shape.closePath();
+  const slots = CATEGORIES.map((c, i) => [((i % cols) - (cols - 1) / 2) * pitchX, ((rows - 1) / 2 - Math.floor(i / cols)) * pitchY]);
+  slots.forEach(([x, y]) => shape.holes.push(archPath(x, y, OW, OH)));
+  let geo = new THREE.ExtrudeGeometry(shape, { depth: .6, bevelEnabled: true, bevelThickness: .05, bevelSize: .05, bevelSegments: 3, curveSegments: 36 });
+  geo.translate(0, 0, -.6); geo = toCreasedNormals(geo, .22);
+  const wallM = stoneMat(COL.wall, .12, .6, .04);
+  const wall = new THREE.Mesh(geo, wallM); wall.castShadow = true; wallGroup.add(wall);
+
+  const backM = stoneMat(COL.back, .1, .7, .04);
+  const back = new THREE.Mesh(new THREE.PlaneGeometry(W * 2, H * 2), backM); back.position.z = -.95; back.receiveShadow = true; wallGroup.add(back);
+  wallMats.push(wallM, backM);
+
+  const ledgeM = new THREE.MeshStandardMaterial({ color: COL.ledge, roughness: .85, envMapIntensity: .3 }); wallMats.push(ledgeM);
+  const glowM = new THREE.MeshBasicMaterial({ map: makeGlowTexture(), transparent: true, depthWrite: false }); glowM.userData.base = 1; glowM.userData.alpha = true; wallMats.push(glowM);
+
+  CATEGORIES.forEach((cat, i) => {
+    const [x, y] = slots[i], bottom = y - OH / 2, g = new THREE.Group();
+    const glow = new THREE.Mesh(new THREE.PlaneGeometry(OW * 1.5, OH * 1.2), glowM.clone()); glow.material.opacity = .55; glow.material.userData.base = .55; glow.material.userData.alpha = true;
+    glow.position.set(x, y - .1, -.9); wallGroup.add(glow); wallMats.push(glow.material);
+
+    const ledge = new THREE.Mesh(new THREE.BoxGeometry(OW * .96, .12, .62), ledgeM);
+    ledge.position.set(x, bottom + .06, -.62); ledge.castShadow = ledge.receiveShadow = true; wallGroup.add(ledge);
+
+    const P = makeVessel(cat, 1.02, null); wallMats.push(P.body.material, P.food.material);
+    const baseZ = -.58, baseY = bottom + .12 + (P.rest || 1.0);
+    P.group.position.set(x, baseY, baseZ); wallGroup.add(P.group);
+
+    const label = new THREE.Mesh(new THREE.PlaneGeometry(OW, OW * .25), new THREE.MeshBasicMaterial({ map: makeLabelTexture(cat.name, i), transparent: true }));
+    label.material.userData.base = 1; label.material.userData.alpha = true; wallMats.push(label.material);
+    label.position.set(x, bottom - .62, .075); wallGroup.add(label);
+
+    const hit = new THREE.Mesh(new THREE.PlaneGeometry(OW + .2, OH + 1.1), new THREE.MeshBasicMaterial({ visible: false }));
+    hit.position.set(x, y - .3, .1); hit.userData.idx = i; wallGroup.add(hit); hitPlanes.push(hit);
+    openings.push({ cat, x, y, P, glow, baseZ, baseY, hover: 0 });
+  });
+  wallMats.forEach(m => { m.userData.base = m.userData.base ?? 1; });
+}
+function setWallOpacity(f){ wallMats.forEach(m => fadeMat(m, f * (m.userData.base ?? 1))); }
+
+/* ============================================================
+   7. CURVED CHAMBER + FOOD CAROUSEL (the small right-hand display)
+   ============================================================ */
+const chamber = new THREE.Group(); chamber.visible = false; scene.add(chamber);
+{ // a curved architectural wall: an annular sector extruded vertically, concave side toward the viewer
+  const Ri = CFG.chRi, Ro = Ri + CFG.chT, a0 = Math.PI / 2 - CFG.chArc / 2, a1 = Math.PI / 2 + CFG.chArc / 2;
+  const s = new THREE.Shape(); s.absarc(0, 0, Ro, a0, a1, false); s.absarc(0, 0, Ri, a1, a0, true); s.closePath();
+  let g = new THREE.ExtrudeGeometry(s, { depth: CFG.chH, bevelEnabled: true, bevelThickness: .07, bevelSize: .07, bevelSegments: 4, curveSegments: 96 });
+  g.rotateX(-Math.PI / 2); g.translate(0, -CFG.chH / 2, CFG.chCz); g = toCreasedNormals(g, .22);
+  const m = stoneMat(COL.chamber, .22, .6, .3); m.userData.base = 1;
+  const slab = new THREE.Mesh(g, m); slab.castShadow = slab.receiveShadow = true; chamber.add(slab);
+  chamber.userData.mat = m;
+}
+const carouselRoot = new THREE.Group(); chamber.add(carouselRoot);
+const carousels = new Map();
+CATEGORIES.forEach(cat => {
+  const group = new THREE.Group(); group.visible = false; carouselRoot.add(group);
+  const cards = cat.items.map((item, idx) => {
+    const P = makeVessel(cat, CFG.plateR, item, true); group.add(P.group);
+    return { ...P, idx, glass: P.kind === 'glass' };
+  });
+  carousels.set(cat.id, { group, cards, fade: 0 });
+});
+
+/* ============================================================
+   8. DOM REFS & UI
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const heroEl = $('hero'), storyEl = $('story'), catnavEl = $('catnav'), dishnavEl = $('dishnav'),
+      wallhintEl = $('wallhint'), backBtn = $('backBtn');
+const fmt = n => String(n + 1).padStart(2, '0');
+
+CATEGORIES.forEach(cat => {
+  const b = document.createElement('button');
+  b.dataset.cat = cat.id; b.textContent = cat.name; b.setAttribute('aria-label', 'Open ' + cat.name);
+  b.addEventListener('click', () => selectCategory(cat.id));
+  catnavEl.appendChild(b);
+});
+const markCat = id => catnavEl.querySelectorAll('button').forEach(p => p.classList.toggle('active', p.dataset.cat === id));
+
+function updateInfo(){
+  const cat = state.category; if (!cat) return;
+  const idx = clamp(Math.round(state.rot), 0, cat.items.length - 1);
+  if (idx === state.activeIdx) return;
+  state.activeIdx = idx;
+  if (stage.ok){ $('infoIdx').textContent = fmt(idx); $('infoTotal').textContent = fmt(cat.items.length - 1); return; }   // the plate stage writes the story
+  const item = cat.items[idx];
+  $('infoCat').textContent = cat.name;
+  $('infoName').textContent = item.name;
+  $('infoDesc').textContent = item.desc;
+  $('infoPrice').textContent = item.price;
+  $('infoNote').textContent = !item.available ? 'Unavailable today' : (item.note || item.badge || '');
+  storyEl.classList.toggle('out', !item.available);
+  $('infoIdx').textContent = fmt(idx); $('infoTotal').textContent = fmt(cat.items.length - 1);
+  storyEl.classList.remove('swap'); void storyEl.offsetWidth; storyEl.classList.add('swap');
+}
+
+/* ============================================================
+   9. TRANSITIONS
+   ============================================================ */
+function showMenuUI(on){
+  [storyEl, dishnavEl, catnavEl].forEach(e => e.classList.toggle('hidden', !on));
+  backBtn.classList.toggle('show', on);
+}
+function goWall(){
+  if (state.mode !== 'menu') return;
+  state.mode = 'transition'; showMenuUI(false); wallhintEl.classList.remove('hidden'); markCat(null);
+  const car = carousels.get(state.category.id), from = { ...camPos }, f0 = state.unroll;
+  wallGroup.visible = true; wallGroup.position.z = -3; setWallOpacity(0);
+  state.voTarget.x = 0; state.voTarget.y = 0;
+  tween({ dur: 1.0, onUpdate: k => { state.chFade = 1 - k; state.unroll = f0 * (1 - k); chamber.position.x = 2.5 * k; chamber.rotation.y = -.35 * k; },
+          onComplete: () => { chamber.visible = false; car.group.visible = false; } });
+  tween({ dur: 1.3, delay: .35, onUpdate: k => {
+    setWallOpacity(k); wallGroup.position.z = -3 * (1 - k);
+    camPos.z = lerp(from.z, zWall, k); camPos.x = 0; camPos.y = 0;
+  }, onComplete: () => { state.mode = 'wall'; } });
+}
+
+function selectCategory(id){
+  if (state.mode === 'transition' || state.mode === 'hero') return;
+  const cat = CATEGORIES.find(c => c.id === id); if (!cat) return;
+  const opening = openings[CATEGORIES.indexOf(cat)];
+  const fromWall = state.mode === 'wall', prev = state.category;
+  state.mode = 'transition'; state.category = cat;
+  state.rot = 0; state.target = 0; state.activeIdx = -1;
+  wallhintEl.classList.add('hidden'); markCat(id);
+  const car = carousels.get(id); car.group.visible = true;
+  const [vx, vy] = voFor();
+
+  if (!fromWall){                      // menu → menu: swap plates in place
+    const old = carousels.get(prev.id);
+    tween({ dur: .7, onUpdate: k => { old.fade = 1 - k; car.fade = k; }, onComplete: () => { old.group.visible = false; state.mode = 'menu'; } });
+    setTimeout(updateInfo, 250); return;
+  }
+  // wall → menu: push through the chosen opening, the wall dissolves, the chamber turns into view
+  const from = { x: camPos.x, y: camPos.y, z: camPos.z };
+  tween({ dur: 1.0, onUpdate: k => {
+    camPos.x = lerp(from.x, opening.x * .55, k); camPos.y = lerp(from.y, opening.y * .55, k); camPos.z = lerp(from.z, zWall * .78, k);
+    setWallOpacity(1 - clamp((k - .25) / .75, 0, 1)); wallGroup.position.z = -3 * k;
+  }, onComplete: () => { wallGroup.visible = false; wallGroup.position.z = 0; } });
+  chamber.visible = true; chamber.position.x = 2.5; chamber.rotation.y = -.35; car.fade = 1; state.chFade = 0; state.unroll = 0;
+  state.voTarget.x = vx; state.voTarget.y = vy;
+  tween({ dur: 1.7, delay: .55, ease: easeOutCubic, onUpdate: k => {
+    state.chFade = clamp(k * 1.6, 0, 1); state.unroll = k; chamber.position.x = 2.5 * (1 - k); chamber.rotation.y = -.35 * (1 - k);
+    camPos.x = lerp(opening.x * .55, 0, k); camPos.y = lerp(opening.y * .55, 0, k); camPos.z = lerp(zWall * .78, zMenu, k);
+  }, onComplete: () => { state.mode = 'menu'; } });
+  showMenuUI(true); setTimeout(updateInfo, 900);
+}
+
+$('exploreBtn').addEventListener('click', () => {
+  heroEl.classList.add('gone'); wallhintEl.classList.remove('hidden');
+  wallGroup.visible = true; wallGroup.position.z = -3; setWallOpacity(0);
+  tween({ dur: 1.8, onUpdate: k => { camPos.z = lerp(zHero, zWall, k); setWallOpacity(k); wallGroup.position.z = -3 * (1 - k); }, onComplete: () => { state.mode = 'wall'; } });
+});
+$('logoBtn').addEventListener('click', () => { if (state.mode === 'menu') goWall(); });
+backBtn.addEventListener('click', goWall);
+$('upBtn').addEventListener('click', () => step(-1));
+$('downBtn').addEventListener('click', () => step(1));
+
+/* ============================================================
+   10. INPUT — wheel / pointer / touch / keyboard  (as prototype)
+   ============================================================ */
+let lastInput = 0;
+const itemCount = () => state.category ? state.category.items.length : 0;
+const clampTarget = v => clamp(v, -0.35, itemCount() - 1 + 0.35);
+function setTarget(v){ state.target = clampTarget(v); lastInput = performance.now(); }
+function step(d){ if (state.mode !== 'menu') return; setTarget(Math.round(state.target) + d); lastInput = performance.now() - 100000; }
+
+let wheelIdle = 0, gestureStart = 0, wheelLastAt = 0;
+window.addEventListener('wheel', e => {
+  if (state.mode !== 'menu') return;
+  e.preventDefault();
+  const now = performance.now();
+  if (now - wheelLastAt > 140) gestureStart = state.target;       // a fresh gesture begins
+  wheelLastAt = now;
+  const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+  const inc = clamp(dy * 0.003, -0.25, 0.25);                     // sensitivity + per-event limit
+  setTarget(clamp(state.target + inc, state.rot - 1.6, state.rot + 1.6));   // the leash
+  clearTimeout(wheelIdle);
+  wheelIdle = setTimeout(() => {                                  // wheel went quiet: settle on a dish
+    const d = state.target - gestureStart, last = itemCount() - 1;
+    const goal = (Math.abs(d) > 0.05 && Math.abs(d) < 0.5) ? Math.round(gestureStart) + Math.sign(d) : Math.round(state.target);
+    state.target = clamp(goal, 0, last);
+  }, 140);
+}, { passive: false });
+
+function pickOpening(){
+  raycaster.setFromCamera(pointerNDC, camera);
+  const h = raycaster.intersectObjects(hitPlanes, false);
+  return h.length ? h[0].object.userData.idx : -1;
+}
+let dragging = false, dragMoved = 0, lastY = 0, lastX = 0, stageDrag = false;
+canvas.addEventListener('pointerdown', e => { dragging = true; dragMoved = 0; lastY = e.clientY; lastX = e.clientX; canvas.setPointerCapture(e.pointerId);
+  stageDrag = stage.ok && state.mode === 'menu' && e.clientX < innerWidth * (state.portrait ? .6 : .67);   // left of the chamber = turn the plate
+  if (stageDrag){ stage.dragging = true; stage.lastDrag = performance.now(); }
+  pointerNDC.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); });
+canvas.addEventListener('pointermove', e => {
+  pointerNDC.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  if (dragging){
+    const dy = e.clientY - lastY, dx = e.clientX - lastX; lastY = e.clientY; lastX = e.clientX; dragMoved += Math.abs(dy);
+    if (stageDrag) stageTurn(dx, dy);
+    else if (state.mode === 'menu') setTarget(state.target - dy * 0.0045);
+  }
+});
+canvas.addEventListener('pointerup', () => {
+  if (stageDrag){ stageDrag = false; stage.dragging = false; stage.lastDrag = performance.now(); dragging = false; return; }
+  dragging = false; if (dragMoved > 8) return;
+  if (state.mode === 'wall'){ const i = pickOpening(); if (i >= 0) selectCategory(CATEGORIES[i].id); }
+  else if (state.mode === 'menu'){      // tap a neighbouring plate to bring it forward
+    raycaster.setFromCamera(pointerNDC, camera);
+    const car = carousels.get(state.category.id);
+    const hits = raycaster.intersectObjects(car.cards.map(c => c.body), false);
+    if (hits.length){ const idx = car.cards.findIndex(c => c.body === hits[0].object); if (idx >= 0 && idx !== Math.round(state.rot)) setTarget(idx); }
+  }
+});
+canvas.addEventListener('pointercancel', () => { dragging = false; stageDrag = false; stage.dragging = false; });
+canvas.addEventListener('dblclick', () => { if (stage.ok){ stage.tYaw = stage.tPitch = 0; stage.lastDrag = 0; } });   // reset the plate
+
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && state.mode === 'menu'){ goWall(); return; }
+  if (state.mode === 'menu'){
+    if (e.key === 'ArrowDown' || e.key === 'PageDown'){ e.preventDefault(); step(1); }
+    if (e.key === 'ArrowUp' || e.key === 'PageUp'){ e.preventDefault(); step(-1); }
+    if (e.key === 'Home'){ setTarget(0); lastInput = 0; }
+    if (e.key === 'End'){ setTarget(itemCount() - 1); lastInput = 0; }
+  }
+  const num = parseInt(e.key);
+  if ((state.mode === 'menu' || state.mode === 'wall') && num >= 1 && num <= 6) selectCategory(CATEGORIES[num - 1].id);
+});
+
+/* ============================================================
+   11. RESPONSIVE CAMERA + LAYOUT
+   ============================================================ */
+let zWall = 14, zHero = 18, zMenu = 20;
+const tanHalf = Math.tan(THREE.MathUtils.degToRad(CFG.fov / 2));
+function voFor(){        // where the chamber sits on screen: right-hand quarter on landscape, upper right on portrait
+  const share = state.portrait ? CFG.chShareP : CFG.chShare;
+  return [1 - 0.022 - share / 2 - 0.5, state.portrait ? 0.15 : 0];
+}
+function onResize(){
+  const w = innerWidth, h = innerHeight, aspect = w / h;
+  renderer.setSize(w, h); camera.aspect = aspect; camera.updateProjectionMatrix();
+  state.portrait = aspect < 0.95;
+  const cols = state.portrait ? 2 : 3, rows = CATEGORIES.length / cols;
+  if (cols !== wallCols) buildWall(cols);
+  const gridW = (cols - 1) * (cols === 2 ? 3.7 : CFG.pitchX) + CFG.OW + 1.2, gridH = (rows - 1) * CFG.pitchY + CFG.OH + 2.2;
+  zWall = Math.max(gridH * 1.04 / (2 * tanHalf), gridW * 1.06 / (2 * tanHalf * aspect));
+  zHero = zWall * 1.22;
+  const share = state.portrait ? CFG.chShareP : CFG.chShare, outer = (CFG.chRi + CFG.chT) * Math.sin(CFG.chArc / 2) * 2;
+  zMenu = outer / share / (2 * tanHalf * aspect);
+  if (state.mode === 'hero') camPos.z = zHero;
+  if (state.mode === 'wall') camPos.z = zWall;
+  if (state.mode === 'menu'){ camPos.z = zMenu; [state.voTarget.x, state.voTarget.y] = voFor(); }
+}
+window.addEventListener('resize', onResize);
+onResize(); camPos.z = zHero;
+
+/* ============================================================
+   12. MAIN LOOP
+   ============================================================ */
+const parallax = new THREE.Vector2();
+const clock = new THREE.Clock();
+
+function updateCarousel(){
+  for (const [id, car] of carousels){
+    if (!car.group.visible) continue;
+    const active = state.category && state.category.id === id;
+    car.cards.forEach(card => { const { group, inner, body, food, idx } = card;
+      const rel = idx - state.rot, a = Math.abs(rel), ang = -rel * CFG.spacing * state.unroll;   // previous dish above, next dish below
+      group.position.set(0, CFG.radius * Math.sin(ang), CFG.radius * (Math.cos(ang) - 1));
+      group.rotation.x = -ang;
+      group.scale.setScalar(Math.max(0.62, 1 - a * 0.17) * lerp(.8, 1, state.unroll));
+      group.visible = a < 1.9;
+      const dim = clamp((a - 0.2) / 1.3, 0, 1) * .5;           // far dishes go quieter, the active one is brightest
+      if (card.glass){
+        body.material.color.setScalar(1 - dim * .45);
+        food.material.color.copy(card.liquidBase).multiplyScalar(1 - dim * .6); card.capMat.color.copy(food.material.color);
+        if (group.visible){ card.inner.updateWorldMatrix(true, false); updateGlassLiquid(card, .5, 0); }   // surface stays level as the drum turns
+      }
+      else { body.material.color.copy(baseCol).lerp(darkCol, dim);
+      food.material.color.setScalar(1 - dim * .75); }
+      const f = car.fade * state.chFade; fadeMat(body.material, f); fadeMat(food.material, f); if (card.capMat) fadeMat(card.capMat, f);
+    });
+  }
+  updateInfo();
+}
+
+/* ============================================================
+   12b. PLATE STAGE — the large slanted plate in the left panel
+   Additive. If anything in this block fails, stage.ok flips to false
+   and the original text-only layout takes over (CSS is scoped to .has-stage).
+   ============================================================ */
+const STAGE = {
+  rest: .62,                       // resting camera elevation of the plate (~35°): the slanted pose
+  yawMax: .52, pitchMin: .32, pitchMax: 1.0,   // ≈ ±30° of turn / tilt
+  z: 1.0,
+  sx: .36, sy: .35, width: .40,    // landscape: plate centre + width as screen fractions
+  sxP: .28, syP: .37, widthP: .50, // portrait
+  inT: 1.35, outT: .45,            // seconds: plate arriving / leaving
+  settle: .25,                     // seconds the carousel must rest before the stage follows it
+  hold: 2.2,                       // seconds before a dragged plate eases back to its slant
+  textDelay: .7,                   // seconds after the plate starts moving before the text writes in
+  glassInT: 2.7,                   // seconds for the corkscrew entrance of the glass
+  glassTextDelay: 2.3,             // the glass text writes in as the glass lands
+  glassK: .74,                     // size of the big wine glass relative to the plate
+};
+const stage = { ok: false, phase: 'none', t: 0, key: '', vis: 0, dim: 0, settleT: 0, q: false, pend: false,
+  uYaw: 0, uPitch: 0, tYaw: 0, tPitch: 0, lastDrag: -1e9, dragging: false, token: 0 };
+const sdamp = THREE.MathUtils.damp;
+const stageCache = new Map();
+function stageTexture(key, src, cb){
+  if (stageCache.has(key)){ cb(stageCache.get(key)); return; }
+  texLoader.load(src, t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; stageCache.set(key, t); cb(t); },
+    undefined, () => console.warn('SKY7: could not load image', src));
+}
+function makeShadowTexture(){
+  const c = mk(256, 256), x = c.getContext('2d');
+  const g = x.createRadialGradient(128, 128, 6, 128, 128, 128);
+  g.addColorStop(0, 'rgba(41,42,39,.55)'); g.addColorStop(.55, 'rgba(41,42,39,.2)'); g.addColorStop(1, 'rgba(41,42,39,0)');
+  x.fillStyle = g; x.fillRect(0, 0, 256, 256); return tex(c);
+}
+try {
+  stage.root = new THREE.Group(); stage.root.visible = false; scene.add(stage.root);
+  stage.yawG = new THREE.Group(); stage.root.add(stage.yawG);
+  stage.plate = makePlate(1, null);                       // the same porcelain plate, drawn large
+  stage.plate.body.castShadow = stage.plate.body.receiveShadow = false; stage.plate.food.receiveShadow = false;
+  stage.yawG.add(stage.plate.group);
+  stage.cur = stage.plate;
+  try {                                                  // the big wine glass: tilt (X) and spin (Y) are separate groups so tilting never swings the spin axis
+    stage.glass = makeGlass(1, null, 0, true);
+    stage.glass.body.castShadow = stage.glass.body.receiveShadow = false;
+    stage.glassTilt = new THREE.Group(); stage.glassYaw = new THREE.Group();
+    stage.gRoot = new THREE.Group(); glassScene.add(stage.gRoot); stage.gRoot.add(stage.glassTilt); stage.glassTilt.add(stage.glassYaw); stage.glassYaw.add(stage.glass.group);
+    stage.glass.group.visible = false;
+  } catch (gerr){ console.warn('SKY7 glass disabled, drinks will use the plate:', gerr); stage.glass = null; }
+  stage.photoG = new THREE.Group(); stage.yawG.add(stage.photoG);   // for transparent cut-out photos (item.cutout)
+  stage.photo = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, toneMapped: false, opacity: 0 }));
+  stage.photo.visible = false; stage.photoG.add(stage.photo);
+  stage.blob = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: makeShadowTexture(), transparent: true, depthWrite: false, opacity: 0 }));
+  stage.blob.position.set(.04, -.24, -.6); stage.blob.scale.set(2.8, 1.55, 1); stage.blob.renderOrder = -1; stage.root.add(stage.blob);
+  stage.ok = true; document.documentElement.classList.add('has-stage');
+} catch (err){ console.warn('SKY7 stage disabled, using text layout:', err); }
+
+function stageFail(err){
+  stage.glassOn = false;
+  console.warn('SKY7 stage disabled, falling back to text layout:', err);
+  stage.ok = false; if (stage.root) stage.root.visible = false;
+  document.documentElement.classList.remove('has-stage');
+  storyEl.classList.remove('pending', 'quiet'); storyEl.style.removeProperty('--t0'); state.activeIdx = -1;
+}
+function stageTurn(dx, dy){                                    // called while dragging on the left stage
+  const glass = stage.cur && stage.cur.kind === 'glass';
+  if (glass && !stage.canTurn) return;                         // the entrance + fill finish before the visitor takes over
+  const ym = glass ? Math.PI : STAGE.yawMax;
+  stage.tYaw = clamp(stage.tYaw + dx * 0.008, -ym, ym);
+  stage.tPitch = clamp(stage.tPitch - dy * 0.006, STAGE.pitchMin - STAGE.rest, STAGE.pitchMax - STAGE.rest);
+  stage.lastDrag = performance.now();
+}
+function setStageContent(item){
+  const cat = state.category, useGlass = !!(stage.glass && cat && cat.vessel === 'glass'), token = ++stage.token;
+  stage.cur = useGlass ? stage.glass : stage.plate;
+  stage.plate.group.visible = !useGlass; if (stage.glass) stage.glass.group.visible = useGlass;
+  stage.photo.visible = false;
+  stage.fillT = 0; stage.fill = 0; stage.slosh = 0; stage.sloshV = 0; stage.prevTilt = 0; stage.canTurn = !useGlass;
+  if (useGlass){                                               // liquid colour comes from the menu item (name, then description)
+    const c = drinkColor(item); stage.glass.food.material.color.copy(c); stage.glass.capMat.color.copy(c); stage.glass.food.visible = false;
+  } else {
+    const fm = stage.plate.food.material; fm.map = wellTex; fm.color.setScalar(1); fm.needsUpdate = true;
+  }
+  const P = stage.cur;
+  if (item.cutout){                                            // transparent PNG of the plated dish
+    stageTexture('c:' + item.cutout, item.cutout, t => {
+      if (token !== stage.token) return;
+      const a = t.image.width / t.image.height;
+      stage.photo.material.map = t; stage.photo.material.needsUpdate = true;
+      stage.photo.scale.set(2.3, 2.3 / a, 1); stage.photo.visible = true; P.group.visible = false;
+    });
+  } else if (item.image && !useGlass){                         // square photo shown inside the plate well
+    const fm = stage.plate.food.material;
+    stageTexture('i:' + item.image, item.image, t => {
+      if (token !== stage.token) return;
+      const a = t.image.width / t.image.height;
+      if (a > 1){ t.repeat.set(1 / a, 1); t.offset.set((1 - 1 / a) / 2, 0); } else { t.repeat.set(1, a); t.offset.set(0, (1 - a) / 2); }
+      fm.map = t; fm.needsUpdate = true;
+    });
+  }
+}
+function writeStory(cat, idx){                                  // the text writes itself in beneath the plate
+  const item = cat.items[idx], d = $('infoDesc'), words = String(item.desc || '').split(/\s+/).filter(Boolean);
+  $('infoCat').textContent = cat.name; $('infoName').textContent = item.name;
+  d.textContent = '';
+  words.forEach((w, i) => { const s = document.createElement('span'); s.className = 'w'; s.style.setProperty('--i', i); s.textContent = w; d.appendChild(s); d.appendChild(document.createTextNode(' ')); });
+  $('infoPrice').textContent = item.price;
+  $('infoNote').textContent = !item.available ? 'Unavailable today' : (item.note || item.badge || '');
+  storyEl.classList.toggle('out', !item.available);
+  storyEl.style.setProperty('--t0', REDUCED ? '0s' : (stage.cur && stage.cur.kind === 'glass' ? STAGE.glassTextDelay : STAGE.textDelay) + 's');
+  storyEl.style.setProperty('--wn', words.length);
+  storyEl.classList.remove('pending', 'quiet'); stage.q = false; stage.pend = false;
+  storyEl.classList.remove('swap'); void storyEl.offsetWidth; storyEl.classList.add('swap');
+}
+
+function stageFrame(dt, t){
+  stage.glassOn = false;
+  const cat = state.category, dur = s => REDUCED ? .01 : s;
+  const ready = !!cat && chamber.visible && state.mode !== 'wall' && state.unroll > .97 && state.chFade > .97;
+  const settled = Math.abs(state.target - state.rot) < .035 && Math.abs(state.rot - Math.round(state.rot)) < .035;
+  stage.settleT = settled ? stage.settleT + dt : 0;
+  const idx = cat ? clamp(Math.round(state.rot), 0, cat.items.length - 1) : 0;
+  const key = cat ? cat.id + ':' + idx : '';
+
+  if (!ready){
+    stage.vis = sdamp(stage.vis, 0, 9, dt);
+    if (stage.vis < .01){ stage.vis = 0; stage.phase = 'none'; stage.key = ''; }
+    if (!stage.pend){ stage.pend = true; storyEl.classList.add('pending'); }
+  } else {
+    const want = stage.settleT > STAGE.settle;
+    if (stage.phase === 'none' && want){ stage.phase = 'in'; stage.t = 0; stage.key = key; setStageContent(cat.items[idx]); writeStory(cat, idx); }
+    else if (stage.phase === 'idle' && want && key !== stage.key){ stage.phase = 'out'; stage.t = 0; }
+  }
+
+  let pe = 1, ox = 0, oy = 0;
+  stage.t += dt;
+  if (ready){
+    let visB = 0;
+    if (stage.phase === 'in'){
+      const k = clamp(stage.t / dur(stage.cur && stage.cur.kind === 'glass' ? STAGE.glassInT : STAGE.inT), 0, 1);
+      pe = easeInOutCubic(clamp(k / .85, 0, 1)); visB = clamp(k / .22, 0, 1);
+      if (k >= 1) stage.phase = 'idle';
+    } else if (stage.phase === 'idle'){ visB = 1; }
+    else if (stage.phase === 'out'){
+      const k = clamp(stage.t / dur(STAGE.outT), 0, 1), e = easeInOutCubic(k);
+      visB = 1 - e; ox = -.08 * e; oy = .05 * e;
+      if (k >= 1){ stage.phase = 'none'; stage.key = ''; visB = 0; if (!stage.pend){ stage.pend = true; storyEl.classList.add('pending'); } }
+    }
+    stage.vis = visB;
+  }
+
+  const moving = ready && stage.phase === 'idle' && !settled;     // while the visitor scrolls, the stage goes quiet
+  stage.dim = sdamp(stage.dim, moving ? 1 : 0, 4, dt);
+  const quiet = ready && (moving || stage.phase === 'out');
+  if (quiet !== stage.q){ stage.q = quiet; storyEl.classList.toggle('quiet', quiet); }
+
+  const f = stage.vis * (1 - .65 * stage.dim);
+  const show = f > .004 && stage.phase !== 'none';
+  stage.root.visible = show; if (!show) return;
+
+  // where the plate lives on screen, re-derived every frame so it is always in the left panel
+  const aspect = innerWidth / innerHeight, port = state.portrait;
+  const d = Math.max(2, camera.position.z - STAGE.z), visH = 2 * d * tanHalf, visW = visH * aspect;
+  const sx = port ? STAGE.sxP : STAGE.sx, sy = port ? STAGE.syP : STAGE.sy, wf = port ? STAGE.widthP : STAGE.width;
+  const R = Math.min(wf * visW / 2, .27 * visH);
+  const X = (sx - .5 - state.vo.x) * visW, Y = (.5 - state.vo.y - sy) * visH;
+  const arc = Math.sin(Math.PI * pe);                             // the plate lifts out of the chamber on an arc
+  const x = lerp(0, X, pe) + ox * R, y = lerp(0, Y, pe) + arc * R * .15 + oy * R, z = lerp(.6, STAGE.z, pe) + arc * 1.4;
+
+  if (!stage.dragging && performance.now() - stage.lastDrag > STAGE.hold * 1000){ if (!(stage.cur && stage.cur.kind === 'glass')) stage.tYaw = 0; stage.tPitch = 0; }
+  stage.uYaw = sdamp(stage.uYaw, stage.tYaw, 5, dt); stage.uPitch = sdamp(stage.uPitch, stage.tPitch, 5, dt);
+  const kk = REDUCED ? 0 : 1;
+  // the plate sits far off the camera axis: turn it to face the camera so perspective does not skew its ellipse
+  const faceYaw = Math.atan2(-(X - camera.position.x), d), faceTilt = Math.atan2(Y - camera.position.y, d);
+  const yaw = -.5 * (1 - pe) * kk + stage.uYaw + faceYaw * pe + kk * (pointerNDC.x * .06 + Math.sin(t * .6) * .03);
+  const restP = clamp(STAGE.rest + stage.uPitch + kk * (pointerNDC.y * .03 + Math.sin(t * .45) * .01), STAGE.pitchMin, STAGE.pitchMax);
+  const pitch = lerp(Math.PI / 2 - .14, restP + faceTilt, pe);               // starts face-on like the chamber plate, tips into the slant
+
+  const G = stage.cur;
+  if (G.kind === 'glass'){
+    // 1) corkscrew in: a spiral path + one slow forward roll   2) land upright   3) brief pause, then the drink rises to half
+    // 4) only then can the visitor turn / tilt it
+    if (stage.phase === 'in' ? pe >= .999 : stage.phase === 'idle') stage.fillT += dt;
+    const ff = easeInOutCubic(clamp((stage.fillT - (REDUCED ? 0 : .6)) / dur(2.6), 0, 1));
+    stage.fill = ff * .5; stage.canTurn = ff >= 1;
+    const hel = Math.sin(Math.PI * pe) * kk, ang = pe * Math.PI * 2 * 1.4;                // helix: zero at both ends of the journey
+    const gx = x + Math.cos(ang) * R * .45 * hel, gy = y + visH * .02 + Math.sin(ang) * R * .3 * hel, gz = z + Math.sin(ang) * 2.2 * hel;
+    const roll = -(1 - easeInOutCubic(pe)) * Math.PI * 2 * kk;                              // forward somersault, ends upright
+    const gYaw = stage.uYaw - (1 - pe) * Math.PI * 2 * kk + kk * (pointerNDC.x * .05 + Math.sin(t * .6) * .02);
+    const gTilt = clamp(stage.uPitch * 1.2, -.4, .4) + roll;
+    const sc = lerp(CFG.plateR, R, pe) * STAGE.glassK;
+    stage.root.position.set(gx, gy, gz); stage.root.scale.setScalar(sc);                    // main scene: only the soft shadow lives here
+    stage.blob.position.set(.08, -1.02, -.4); stage.blob.scale.set(2.3, .85, 1);
+    // the glass itself: a straight-on camera, placed on screen exactly where the main camera sees (gx, gy, gz)
+    camera.updateMatrixWorld(); _gv.set(gx, gy, gz).project(camera);
+    const W = innerWidth, H = innerHeight, depth = Math.max(2, camera.position.z - gz);
+    glassCam.aspect = camera.aspect; glassCam.position.set(0, 0, depth);
+    glassCam.setViewOffset(W, H, -_gv.x * .5 * W, _gv.y * .5 * H, W, H); glassCam.lookAt(0, 0, 0);
+    stage.gRoot.position.set(0, 0, 0); stage.gRoot.scale.setScalar(sc);
+    stage.glassYaw.rotation.y = gYaw; stage.glassTilt.rotation.x = gTilt;
+    stage.glassOn = true;
+    const dT = gTilt - stage.prevTilt; stage.prevTilt = gTilt;     // the surface lags the glass a little, then settles level
+    if (stage.fill < .004){ stage.slosh = 0; stage.sloshV = 0; }
+    else { stage.slosh = clamp(stage.slosh + dT * .8, -.4, .4); stage.sloshV += (-stage.slosh * 34 - stage.sloshV * 3.2) * dt; stage.slosh += stage.sloshV * dt; }
+    stage.gRoot.updateMatrixWorld(true);
+    updateGlassLiquid(G, stage.fill, stage.slosh);
+    fadeMat(G.body.material, f); fadeMat(G.food.material, f); fadeMat(G.capMat, f);
+  } else {
+    stage.root.position.set(x, y, z);
+    stage.root.scale.setScalar(lerp(CFG.plateR, R, pe));
+    stage.blob.position.set(.04, -.24, -.6); stage.blob.scale.set(2.8, 1.55, 1);
+    stage.yawG.rotation.y = yaw;
+    stage.plate.inner.rotation.x = pitch;
+    stage.photoG.rotation.x = (pitch - STAGE.rest) * .5;
+    fadeMat(stage.plate.body.material, f); fadeMat(stage.plate.food.material, f);
+  }
+  stage.photo.material.opacity = f;
+  stage.blob.material.opacity = .34 * f * f;
+}
+function updateStage(dt, t){
+  if (!stage.ok) return;
+  try { stageFrame(dt, t); } catch (err){ stageFail(err); }
+}
+
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
+  stepTweens(dt);
+
+  if (state.mode === 'menu' || (state.mode === 'transition' && state.category)){
+    if (performance.now() - lastInput > 180){
+      const n = itemCount(), nearest = clamp(Math.round(state.target), 0, n - 1);
+      state.target += (nearest - state.target) * 0.07;
+    }
+    const gap = state.target - state.rot, maxStep = (REDUCED ? 99 : 2.4) * dt;   // 2.4 = top speed in dishes per second
+    state.rot += clamp(gap * Math.min(1, (REDUCED ? 30 : 3.2) * dt), -maxStep, maxStep);
+  }
+  // view offset glides: this is what makes the chamber sit in the right quarter without distorting it
+  state.vo.x += (state.voTarget.x - state.vo.x) * Math.min(1, (REDUCED ? 30 : 2.6) * dt);
+  state.vo.y += (state.voTarget.y - state.vo.y) * Math.min(1, (REDUCED ? 30 : 2.6) * dt);
+  if (Math.abs(state.vo.x) + Math.abs(state.vo.y) > 0.0005){
+    const w = innerWidth, h = innerHeight; camera.setViewOffset(w, h, -state.vo.x * w, state.vo.y * h, w, h);
+  } else camera.clearViewOffset();
+
+  if (!REDUCED){
+    parallax.x += (pointerNDC.x * (state.mode === 'menu' ? .25 : .5) - parallax.x) * 0.04;
+    parallax.y += (-pointerNDC.y * (state.mode === 'menu' ? .15 : .3) - parallax.y) * 0.04;
+  }
+  const sway = (!REDUCED && state.mode !== 'menu') ? Math.sin(t * .4) * .1 : 0;
+  camera.position.set(camPos.x + parallax.x, camPos.y + parallax.y + sway, camPos.z);
+  camera.lookAt(camPos.x * .6, camPos.y * .6, 0);
+
+  // openings: the plate inside leans toward the visitor, the light behind it opens up
+  if (state.mode === 'wall'){
+    const hi = pickOpening();
+    canvas.style.cursor = hi >= 0 ? 'pointer' : 'default';
+    openings.forEach((o, i) => {
+      o.hover += ((i === hi ? 1 : 0) - o.hover) * 0.1; const k = o.hover;
+      o.P.group.position.z = o.baseZ + k * .3;
+      o.P.group.rotation.y = pointerNDC.x * .25 * k; o.P.group.rotation.x = -pointerNDC.y * .12 * k;
+      o.glow.material.userData.base = o.glow.material.opacity = .55 + k * .4;
+    });
+  } else canvas.style.cursor = state.mode === 'menu' ? 'grab' : 'default';
+
+  if (chamber.visible){ fadeMat(chamber.userData.mat, state.chFade); updateCarousel(); }
+  updateStage(dt, t);
+  renderer.render(scene, camera);
+  if (stage.ok && stage.glassOn){ renderer.autoClear = false; renderer.clearDepth(); renderer.render(glassScene, glassCam); renderer.autoClear = true; }
+}
+
+/* ============================================================
+   13. BOOT — wait for fonts so canvas label textures use Lexend
+   ============================================================ */
+Promise.race([Promise.all([document.fonts.load('300 40px Lexend'), document.fonts.load('400 20px Figtree')]), new Promise(r => setTimeout(r, 1500))]).then(() => {
+  buildWall(wallCols || (state.portrait ? 2 : 3));
+  wallGroup.visible = false;
+  animate();
+});
+</script>
+</body>
+</html>
