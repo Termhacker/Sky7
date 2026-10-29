@@ -1,9 +1,0 @@
-node_modules/
-dist/
-.vite/
-.env
-.env.*
-!.env.example
-
-# Uploaded restaurant images (local development storage)
-server/uploads/
